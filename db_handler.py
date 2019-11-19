@@ -52,6 +52,18 @@ def get_id(rname: str) -> str:
 
 
 
+def get_nicknames() -> [dict]:
+    user_list = []
+    for user in Users.select().where(Users.realname!=None):
+        user_dict = {
+            'username': user.username,
+            'nickname': user.realname
+        }
+        user_list.append(user_dict)
+    return user_list
+
+
+
 def add_yikes(uID: str):
     user = Users.get(Users.userID==uID)
     user.yikes += 1

@@ -60,6 +60,7 @@ async def help(ctx):
                 'note: all commands must be preceeded by "gay ". ex: gay help\n'
                 'note: all instances of <user> can be pings with @ or name shorthands. ex: "gaymock @GayZach" is the same as "gaymock j-zach\n"'
                 'help                 displays this message.\n'
+                'checknicknames       shows all the users who have nicknames for quick referencing\n'
                 'mock <user>          randomizes the capitlization in that user\'s last message in this channel.\n'
                 'yikes <user>         awards that user with a yikes.\n'
                 'checkyikes <user>    checks how many yikes that user has been awarded.\n'
@@ -68,6 +69,24 @@ async def help(ctx):
                 'scan                 scans the server\'s users to update the bot\'s database. use if new users join.'
                 '```')
     await ctx.send(commands)
+
+
+
+@bot.command()
+async def checknicknames(ctx):
+    '''
+    gets a list of all users with a nickname
+    '''
+    global logger
+    logger.info(f'{ctx.author.name}: {ctx.message.content}')
+
+    nicknames = db.get_nicknames()
+    msg = 'all users with nicknames\nusername: nickname'
+    for user in nicknames:
+        msg += f"\n{user['username']}: {user['nickname']}"
+    msg += '\nif a name is not on here, they either don\'t have a nickname or are not initialized in the database'
+    msg += '\nif you would like to change or add a nickname, message j-zach'
+    await ctx.send(msg)
 
 
 
@@ -87,7 +106,7 @@ async def mock(ctx, user):
         user_id = ctx.message.mentions[0].id
 
     async for msg in ctx.channel.history(limit=100):
-        if msg.author.id == user_id: # get user's last message
+        if msg.author.id == user_id and not msg.content.startswith('gay '): # get user's last message that's not a bot command
             mocked = ''
             for char in msg.content: # randomize what character is uppercase and lowercase
                 if randint(0, 1) == 1:
