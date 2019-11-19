@@ -25,7 +25,7 @@ console_handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-bot = commands.Bot(command_prefix='gay', help_command=None, activity=discord.Game(name='type "gayhelp" for help in chat'))
+bot = commands.Bot(command_prefix='gay ', help_command=None, activity=discord.Game(name='gay help'))
 
 
 
@@ -57,8 +57,8 @@ async def help(ctx):
 
     commands = ('```'
                 'BOT COMMANDS\n'
-                'note: all commands must be preceeded by "gay". ex: gayhelp\n'
-                'note: all instances of <user> can be pings with @ or name shorthands. ex: "gaymock @GayZach" is the same as "gaymock j-zach"'
+                'note: all commands must be preceeded by "gay ". ex: gay help\n'
+                'note: all instances of <user> can be pings with @ or name shorthands. ex: "gaymock @GayZach" is the same as "gaymock j-zach\n"'
                 'help                 displays this message.\n'
                 'mock <user>          randomizes the capitlization in that user\'s last message in this channel.\n'
                 'yikes <user>         awards that user with a yikes.\n'
@@ -116,6 +116,29 @@ async def yikes(ctx, recipient):
         db.add_yikes(ping[ping.find('@')+1:-1]) # a really round about way to get the id
         logger.info(f'{recipient} received one yikes')
         await ctx.send(ping + ' ' + yikes_link)
+    except UserNotFound:
+        logger.error(f'could not find {recipient} in database')
+        await ctx.send(f'could not find {recipient}')
+
+
+
+@bot.command()
+async def checkyikes(ctx, user):
+    '''
+    checks how many yikes a user has
+    '''
+    global logger
+    logger.info(f'{ctx.author.name}: {ctx.message.content}')
+
+    try:
+        # allows for users to @mention or use real names
+        if len(ctx.message.mentions) == 0:
+            username = user
+        else:
+            username = ctx.message.mentions[0].name
+        yike_qty = db.get_yikes(username)
+        logger.info(f'{username} has {yike_qty} yikes')
+        await ctx.send(f'{username} has {yike_qty} yikes')
     except UserNotFound:
         logger.error(f'could not find {recipient} in database')
         await ctx.send(f'could not find {recipient}')

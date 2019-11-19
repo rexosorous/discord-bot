@@ -56,3 +56,9 @@ def add_yikes(uID: str):
     user = Users.get(Users.userID==uID)
     user.yikes += 1
     user.save()
+
+
+
+def get_yikes(uname: str) -> int:
+    user = Users.get(Users.username==uname)
+    return user.yikes
