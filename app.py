@@ -57,8 +57,8 @@ async def help(ctx):
 
     commands = ('```'
                 'BOT COMMANDS\n'
-                'note: all commands must be preceeded by "gay ". ex: gay help\n'
-                'note: all instances of <user> can be pings with @ or name shorthands. ex: "gaymock @GayZach" is the same as "gaymock j-zach\n"'
+                'note: all commands must be preceeded by "gay ". ex: "gay help"\n'
+                'note: all instances of <user> can be pings with @ or name shorthands. ex: "gay mock @GayZach" is the same as "gay mock j-zach"\n\n'
                 'help                 displays this message.\n'
                 'checknicknames       shows all the users who have nicknames for quick referencing\n'
                 'mock <user>          randomizes the capitlization in that user\'s last message in this channel.\n'
@@ -81,10 +81,10 @@ async def checknicknames(ctx):
     logger.info(f'{ctx.author.name}: {ctx.message.content}')
 
     nicknames = db.get_nicknames()
-    msg = 'all users with nicknames\nusername: nickname'
+    msg = 'all users with nicknames\n```username: nickname'
     for user in nicknames:
         msg += f"\n{user['username']}: {user['nickname']}"
-    msg += '\nif a name is not on here, they either don\'t have a nickname or are not initialized in the database'
+    msg += '```\nif a name is not on here, they either don\'t have a nickname or are not initialized in the database'
     msg += '\nif you would like to change or add a nickname, message j-zach'
     await ctx.send(msg)
 
