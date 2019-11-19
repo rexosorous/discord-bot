@@ -25,7 +25,7 @@ console_handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-bot = commands.Bot(command_prefix='gay', help_command=None)
+bot = commands.Bot(command_prefix='gay', help_command=None, activity=discord.Game(name='type "gayhelp" for help in chat'))
 
 
 
