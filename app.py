@@ -62,6 +62,7 @@ async def help(ctx):
                 'help                 displays this message.\n'
                 'mock <user>          randomizes the capitlization in that user\'s last message in this channel.\n'
                 'yikes <user>         awards that user with a yikes.\n'
+                'checkyikes <user>    checks how many yikes that user has been awarded.\n'
                 'bruh                 shows the bruh copy pasta.\n'
                 'emoji <emoji name>   uses this server\'s emoji even if it\'s nitro gated. note: don\'t surround the emoji name with colons.\n'
                 'scan                 scans the server\'s users to update the bot\'s database. use if new users join.'
@@ -137,8 +138,14 @@ async def checkyikes(ctx, user):
         else:
             user = ctx.message.mentions[0].name
             yike_qty = db.get_yikes_from_uname(user)
-        logger.info(f'{user} has {yike_qty} yikes')
-        await ctx.send(f'{user} has {yike_qty} yikes')
+
+        # i need this part cause people are babies
+        yike_msg = 'yikes'
+        if yike_qty == 1:
+            yike_msg = 'yike'
+
+        logger.info(f'{user} has {yike_qty} {yike_msg}')
+        await ctx.send(f'{user} has {yike_qty} {yike_msg}')
     except UserNotFound:
         logger.error(f'could not find {user} in database')
         await ctx.send(f'could not find {user}')
