@@ -10,7 +10,6 @@ import db_handler as db
 
 '''
 TODO
-* help / commands list
 * error handling (ie. command syntax reminders)
 '''
 
@@ -26,7 +25,7 @@ console_handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-bot = commands.Bot(command_prefix='gay')
+bot = commands.Bot(command_prefix='gay', help_command=None)
 
 
 
@@ -45,6 +44,29 @@ async def on_ready():
     logger.info('finished initializing')
     logger.info('bot ready!')
     logger.info('awaiting commands ...\n\n\n')
+
+
+
+@bot.command()
+async def help(ctx):
+    '''
+    shows all the commands and their syntax
+    '''
+    global logger
+    logger.info(f'{ctx.author.name}: {ctx.message.content}')
+
+    commands = ('```'
+                'BOT COMMANDS\n'
+                'note: all commands must be preceeded by "gay". ex: gayhelp\n'
+                'note: all instances of <user> can be pings with @ or name shorthands. ex: "gaymock @GayZach" is the same as "gaymock j-zach"'
+                'help                 displays this message.\n'
+                'mock <user>          randomizes the capitlization in that user\'s last message in this channel.\n'
+                'yikes <user>         awards that user with a yikes.\n'
+                'bruh                 shows the bruh copy pasta.\n'
+                'emoji <emoji name>   uses this server\'s emoji even if it\'s nitro gated. note: don\'t surround the emoji name with colons.\n'
+                'scan                 scans the server\'s users to update the bot\'s database. use if new users join.'
+                '```')
+    await ctx.send(commands)
 
 
 
@@ -128,6 +150,21 @@ async def emoji(ctx, *emoji_names):
     if msg:
         logger.info(msg)
         await ctx.send(msg)
+
+
+
+@bot.command()
+async def scan(ctx):
+    '''
+    allows users to rescan the users during runtime if usernames are changed or new users join
+    '''
+    global logger
+    logger.info(f'{ctx.author.name}: {ctx.message.content}')
+
+    for guild in bot.guilds:
+        for member in guild.members:
+            if not member.bot:
+                db.init_user(str(member.id), member.name)
 
 
 

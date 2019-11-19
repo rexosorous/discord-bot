@@ -28,6 +28,11 @@ class Users(BaseModel):
 
 
 def init_user(uID: str, uname: str):
+    '''
+    changes a user's username if it is changed
+    adds new users into the database if they aren't in
+    '''
+    uname = uname.lower()
     user = Users.get(Users.userID==uID)
     if user:
         if user.username != uname:
@@ -39,6 +44,7 @@ def init_user(uID: str, uname: str):
 
 
 def get_id(rname: str) -> str:
+    rname = rname.lower()
     try:
         return Users.get(Users.realname==rname).userID
     except User.DoesNotExist:
