@@ -59,6 +59,18 @@ def add_yikes(uID: str):
 
 
 
-def get_yikes(uname: str) -> int:
-    user = Users.get(Users.username==uname)
-    return user.yikes
+def get_yikes_from_rname(rname: str) -> int:
+    try:
+        user = Users.get(Users.realname==rname)
+        return user.yikes
+    except User.DoesNotExist:
+        raise UserNotFound
+
+
+
+def get_yikes_from_uname(uname: str) -> int:
+    try:
+        user = Users.get(Users.username==uname)
+        return user.yikes
+    except User.DoesNotExist:
+        raise UserNotFound

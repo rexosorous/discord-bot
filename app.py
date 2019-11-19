@@ -133,15 +133,15 @@ async def checkyikes(ctx, user):
     try:
         # allows for users to @mention or use real names
         if len(ctx.message.mentions) == 0:
-            username = user
+            yike_qty = db.get_yikes_from_rname(user)
         else:
-            username = ctx.message.mentions[0].name
-        yike_qty = db.get_yikes(username)
-        logger.info(f'{username} has {yike_qty} yikes')
-        await ctx.send(f'{username} has {yike_qty} yikes')
+            user = ctx.message.mentions[0].name
+            yike_qty = db.get_yikes_from_uname(user)
+        logger.info(f'{user} has {yike_qty} yikes')
+        await ctx.send(f'{user} has {yike_qty} yikes')
     except UserNotFound:
-        logger.error(f'could not find {recipient} in database')
-        await ctx.send(f'could not find {recipient}')
+        logger.error(f'could not find {user} in database')
+        await ctx.send(f'could not find {user}')
 
 
 
