@@ -68,7 +68,7 @@ async def help(ctx):
                 'checkyikes <user>    checks how many yikes that user has been awarded.\n'
                 'bruh                 shows the bruh copy pasta.\n'
                 'emoji <emoji name>   uses this server\'s emoji even if it\'s nitro gated. note: don\'t surround the emoji name with colons.\n'
-                'scan                 scans the server\'s users to update the bot\'s database. use if new users join.'
+                'scan                 scans the server\'s users to update the bot\'s database. use if new users join.\n'
                 '```')
     await ctx.send(commands)
 

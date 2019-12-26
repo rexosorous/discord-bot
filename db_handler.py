@@ -33,12 +33,13 @@ def init_user(uID: str, uname: str):
     adds new users into the database if they aren't in
     '''
     uname = uname.lower()
-    user = Users.get(Users.userID==uID)
-    if user:
-        if user.username != uname:
-            user.username = uname
-            user.save()
-    else:
+    try:
+        user = Users.get(Users.userID==uID)
+        if user:
+            if user.username != uname:
+                user.username = uname
+                user.save()
+    except peewee.DoesNotExist:
         Users.create(userID= uID, username=uname, yikes=0)
 
 
