@@ -13,7 +13,6 @@ TODO
 * error handling (ie. command syntax reminders)
 '''
 
-yikes_link = 'https://cdn.discordapp.com/attachments/244738123802607616/645827013030182932/d70d53df721cea99097dea76ab8eabbf.png'
 
 # logger stuff
 logger = logging.getLogger('gaybot')
@@ -28,6 +27,9 @@ logger.addHandler(console_handler)
 bot = commands.Bot(command_prefix='gay ', help_command=None, activity=discord.Game(name='gay help'))
 
 
+# init images
+mock_img = discord.File('images/mock.jpg')
+yike_img = discord.File('images/yike.png')
 
 
 
@@ -115,6 +117,7 @@ async def mock(ctx, user):
                     mocked += char.lower()
             logger.info(mocked)
             await ctx.send(mocked)
+            await ctx.send(file=mock_img)
             return
 
 
@@ -135,7 +138,8 @@ async def yikes(ctx, recipient):
             ping = ctx.message.mentions[0].mention
         db.add_yikes(ping[ping.find('@')+1:-1]) # a really round about way to get the id
         logger.info(f'{recipient} received one yikes')
-        await ctx.send(ping + ' ' + yikes_link)
+        await ctx.send(ping)
+        await ctx.send(yike_img)
     except UserNotFound:
         logger.error(f'could not find {recipient} in database')
         await ctx.send(f'could not find {recipient}')
