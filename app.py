@@ -60,7 +60,8 @@ async def help(ctx):
     commands = ('```'
                 'BOT COMMANDS\n'
                 'note: all commands must be preceeded by "gay ". ex: "gay help"\n'
-                'note: all instances of <user> can be pings with @ or name shorthands. ex: "gay mock @GayZach" is the same as "gay mock j-zach"\n\n'
+                'note: all instances of <user> can be pings with @ or name shorthands. ex: "gay mock @GayZach" is the same as "gay mock j-zach"\n'
+                'github link: https://github.com/rexosorous/discord-bot\n\n'
                 'help                 displays this message.\n'
                 'checknicknames       shows all the users who have nicknames for quick referencing\n'
                 'mock <user>          randomizes the capitlization in that user\'s last message in this channel.\n'
@@ -68,7 +69,7 @@ async def help(ctx):
                 'checkyikes <user>    checks how many yikes that user has been awarded.\n'
                 'bruh                 shows the bruh copy pasta.\n'
                 'emoji <emoji name>   uses this server\'s emoji even if it\'s nitro gated. note: don\'t surround the emoji name with colons.\n'
-                'scan                 scans the server\'s users to update the bot\'s database. use if new users join.\n'
+                'scan                 scans the server\'s users to update the bot\'s database. use if new users join.'
                 '```')
     await ctx.send(commands)
 
