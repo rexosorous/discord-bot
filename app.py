@@ -32,6 +32,8 @@ mock_img = discord.File('images/mock.jpg')
 yike_img = discord.File('images/yike.png')
 
 
+quote_channel = bot.get_channel(178576825511837696)
+
 
 
 @bot.event
@@ -69,6 +71,7 @@ async def help(ctx):
                 'checkyikes <user>    checks how many yikes that user has been awarded.\n'
                 'bruh                 shows the bruh copy pasta.\n'
                 'emoji <emoji name>   uses this server\'s emoji even if it\'s nitro gated. note: don\'t surround the emoji name with colons.\n'
+                'quote <user> <num>   posts in the quote channel with the user\'s last num messages in this channel'
                 'scan                 scans the server\'s users to update the bot\'s database. use if new users join.'
                 '```')
     await ctx.send(commands)
@@ -206,6 +209,46 @@ async def emoji(ctx, *emoji_names):
         await ctx.send(msg)
 
 
+
+@bot.command()
+async def quote(ctx, user, count=1):
+    '''
+    quotes user and posts it to multiple quotes of the day channel
+    if count is specified, user's last count's worth of messages are combined into one quote
+    '''
+    global logger
+    logger.info(f'{ctx.author.name}: {ctx.message.content}')
+
+    count = int(count)
+
+    # allows for users to @mention or use real names
+    if len(ctx.message.mentions) == 0:
+        user_id = int(db.get_id(user))
+    else:
+        user_id = ctx.message.mentions[0].id
+
+    # makes sure the bot doesn't ping the user when posting
+    username = user
+    if username.startswith('@'):
+        username = username[1:]
+
+    searched = 0
+    quote = ''
+    async for msg in ctx.channel.history(limit=100):
+        if msg.author.id == user_id and not msg.content.startswith('gay '): # get user's last message that's not a bot command
+            # gets rid of hanging '\n'
+            if quote:
+                quote = msg.content + '\n' + quote
+            else:
+                quote = msg.content
+
+            searched += 1
+            if count:
+                if searched >= count:
+                    await quote_channel.send(f'"{quote}" -{username}')
+                    return
+
+    
 
 @bot.command()
 async def scan(ctx):
