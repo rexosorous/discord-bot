@@ -140,7 +140,7 @@ async def yikes(ctx, recipient):
         db.add_yikes(ping[ping.find('@')+1:-1]) # a really round about way to get the id
         logger.info(f'{recipient} received one yikes')
         await ctx.send(ping)
-        await ctx.send(yike_img)
+        await ctx.send(file=yike_img)
     except UserNotFound:
         logger.error(f'could not find {recipient} in database')
         await ctx.send(f'could not find {recipient}')
