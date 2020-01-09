@@ -32,7 +32,7 @@ mock_img = discord.File('images/mock.jpg')
 yike_img = discord.File('images/yike.png')
 
 
-quote_channel = bot.get_channel(178576825511837696)
+quote_channel_id = 178576825511837696
 
 
 
@@ -245,10 +245,10 @@ async def quote(ctx, user, count=1):
             searched += 1
             if count:
                 if searched >= count:
-                    await quote_channel.send(f'"{quote}" -{username}')
+                    await bot.get_channel(quote_channel_id).send(f'"{quote}" -{username}')
                     return
 
-    
+
 
 @bot.command()
 async def scan(ctx):
