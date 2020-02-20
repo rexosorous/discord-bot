@@ -276,17 +276,20 @@ async def soundboard(ctx, *search_terms):
     global voice
     search = ' '.join(search_terms)
     all_clips = os.listdir('soundboard/') # finds all the file names
-    selected_clip = difflib.get_close_matches(search, all_clips, cutoff=0.1) # finds the file name closest to search params
+    selected_clip = difflib.get_close_matches(search, all_clips, cutoff=0.3) # finds the file name closest to search params
 
-    if selected_clip: # don't join the VC if we couldn't find the clip
-        channel = ctx.message.author.voice.channel # find the voice channel of the person who sent the message
-        voice = await channel.connect() # connect to said voice channel
-        voice.play(discord.FFmpegPCMAudio(f'soundboard/{selected_clip[0]}')) # play clip
-        while voice.is_playing(): # wait until the clip is done playing to disconnect
-            await asyncio.sleep(0.1)
-        await voice.disconnect()
-    else:
-        await ctx.send('could not find any clips with that search term')
+    try:
+        if selected_clip: # don't join the VC if we couldn't find the clip
+            channel = ctx.message.author.voice.channel # find the voice channel of the person who sent the message
+            voice = await channel.connect() # connect to said voice channel
+            voice.play(discord.FFmpegPCMAudio(f'soundboard/{selected_clip[0]}')) # play clip
+            while voice.is_playing(): # wait until the clip is done playing to disconnect
+                await asyncio.sleep(0.1)
+            await voice.disconnect()
+        else:
+            await ctx.send('could not find any clips with that search term')
+    except AttributeError:
+        await ctx.send('you are not in a voice channel')
 
 
 
