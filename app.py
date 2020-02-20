@@ -255,17 +255,21 @@ async def quote(ctx, user, count=1):
 
 
 @bot.command()
-async def soundboard(ctx, search):
+async def soundboard(ctx, *search_terms):
     '''
     joins a voice channel and plays the specified soundboard clip
     '''
+    search = ' '.join(search_terms)
     all_clips = os.listdir('soundboard/') # finds all the file names
-    selected_clip = difflib.get_close_matches(search, all_clips, n=1) # finds the file name closest to search params
+    selected_clip = difflib.get_close_matches(search, all_clips, cutoff=0.1) # finds the file name closest to search params
 
     if selected_clip: # don't join the VC if we couldn't find the clip
         channel = ctx.message.author.voice.channel # find the voice channel of the person who sent the message
         voice = await channel.connect() # connect to said voice channel
-        voice.play(discord.FFmpegPCMAudio(f'soundboard/{selected_clip[0]}'), after=await voice.disconnect()) # play clip, then DC
+        voice.play(discord.FFmpegPCMAudio(f'soundboard/{selected_clip[0]}')) # play clip
+        while voice.is_playing(): # wait until the clip is done playing to disconnect
+            pass
+        await voice.disconnect()
     else:
         await ctx.send('could not find any clips with that search term')
 
@@ -276,10 +280,11 @@ async def checksoundboard(ctx):
     '''
     shows all the clips that the soundboard can play
     '''
-    clip_names = ''
+    clip_names = 'All Playable Soundboard Clips:```'
     all_clips = os.listdir('soundboard/')
     for clip in all_clips:
         clip_names += (clip[:-4] + '\n')
+    clip_names += '```'
     await ctx.send(clip_names)
 
 
