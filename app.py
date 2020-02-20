@@ -318,7 +318,7 @@ async def scan(ctx):
 
 
 @bot.command()
-async def stop(ctx):
+async def kill(ctx):
     '''
     stops the bot
     can only be used by me
