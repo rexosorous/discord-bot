@@ -3,6 +3,8 @@ from discord.ext import commands
 from random import randint
 import logging
 from sys import stdout
+import difflib
+import os
 
 from exceptions import *
 import db_handler as db
@@ -64,15 +66,17 @@ async def help(ctx):
                 'note: all commands must be preceeded by "gay ". ex: "gay help"\n'
                 'note: all instances of <user> can be pings with @ or name shorthands. ex: "gay mock @GayZach" is the same as "gay mock j-zach"\n'
                 'github link: https://github.com/rexosorous/discord-bot\n\n'
-                'help                 displays this message.\n'
-                'checknicknames       shows all the users who have nicknames for quick referencing\n'
-                'mock <user>          randomizes the capitlization in that user\'s last message in this channel.\n'
-                'yikes <user>         awards that user with a yikes.\n'
-                'checkyikes <user>    checks how many yikes that user has been awarded.\n'
-                'bruh                 shows the bruh copy pasta.\n'
-                'emoji <emoji name>   uses this server\'s emoji even if it\'s nitro gated. note: don\'t surround the emoji name with colons.\n'
-                'quote <user> <num>   posts in the quote channel with the user\'s last num messages in this channel'
-                'scan                 scans the server\'s users to update the bot\'s database. use if new users join.'
+                'help                       displays this message.\n'
+                'checknicknames             shows all the users who have nicknames for quick referencing\n'
+                'mock <user>                randomizes the capitlization in that user\'s last message in this channel.\n'
+                'yikes <user>               awards that user with a yikes.\n'
+                'checkyikes <user>          checks how many yikes that user has been awarded.\n'
+                'bruh                       shows the bruh copy pasta.\n'
+                'emoji <emoji name>         uses this server\'s emoji even if it\'s nitro gated. note: don\'t surround the emoji name with colons.\n'
+                'quote <user> <num>         posts in the quote channel with the user\'s last num messages in this channel\n'
+                'soundboard <clip name>     joins the voice channel and plays the specified clip\n'
+                'checksoundboard            shows all the clips names that the soundboard can play\n'
+                'scan                       scans the server\'s users to update the bot\'s database. use if new users join.'
                 '```')
     await ctx.send(commands)
 
@@ -247,6 +251,36 @@ async def quote(ctx, user, count=1):
                 if searched >= count:
                     await bot.get_channel(quote_channel_id).send(f'"{quote}" -{username}')
                     return
+
+
+
+@bot.command()
+async def soundboard(ctx, search):
+    '''
+    joins a voice channel and plays the specified soundboard clip
+    '''
+    all_clips = os.listdir('soundboard/') # finds all the file names
+    selected_clip = difflib.get_close_matches(search, all_clips, n=1) # finds the file name closest to search params
+
+    if selected_clip: # don't join the VC if we couldn't find the clip
+        channel = ctx.message.author.voice.channel # find the voice channel of the person who sent the message
+        voice = await channel.connect() # connect to said voice channel
+        voice.play(discord.FFmpegPCMAudio(f'soundboard/{selected_clip[0]}'), after=await voice.disconnect()) # play clip, then DC
+    else:
+        await ctx.send('could not find any clips with that search term')
+
+
+
+@bot.command()
+async def checksoundboard(ctx):
+    '''
+    shows all the clips that the soundboard can play
+    '''
+    clip_names = ''
+    all_clips = os.listdir('soundboard/')
+    for clip in all_clips:
+        clip_names += (clip[:-4] + '\n')
+    await ctx.send(clip_names)
 
 
 
