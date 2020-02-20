@@ -5,6 +5,7 @@ import logging
 from sys import stdout
 import difflib
 import os
+import asyncio
 
 from exceptions import *
 import db_handler as db
@@ -42,6 +43,7 @@ yike_img = discord.File('images/yike.png')
 
 
 quote_channel_id = 178576825511837696
+voice = None
 
 
 
@@ -83,6 +85,8 @@ async def help(ctx):
                 'quote <user> <num>         posts in the quote channel with the user\'s last num messages in this channel\n'
                 'soundboard <clip name>     joins the voice channel and plays the specified clip\n'
                 'checksoundboard            shows all the clips names that the soundboard can play\n'
+                'stop                       stops the soundboard clip and leaves the audio channel\n'
+                'leave                      same as stop\n'
                 'scan                       scans the server\'s users to update the bot\'s database. use if new users join.'
                 '```')
     await ctx.send(commands)
@@ -269,6 +273,7 @@ async def soundboard(ctx, *search_terms):
     global logger
     logger.info(f'{ctx.author.name}: {ctx.message.content}')
 
+    global voice
     search = ' '.join(search_terms)
     all_clips = os.listdir('soundboard/') # finds all the file names
     selected_clip = difflib.get_close_matches(search, all_clips, cutoff=0.1) # finds the file name closest to search params
@@ -278,7 +283,7 @@ async def soundboard(ctx, *search_terms):
         voice = await channel.connect() # connect to said voice channel
         voice.play(discord.FFmpegPCMAudio(f'soundboard/{selected_clip[0]}')) # play clip
         while voice.is_playing(): # wait until the clip is done playing to disconnect
-            pass
+            await asyncio.sleep(0.1)
         await voice.disconnect()
     else:
         await ctx.send('could not find any clips with that search term')
@@ -299,6 +304,36 @@ async def checksoundboard(ctx):
         clip_names += (clip[:-4] + '\n')
     clip_names += '```'
     await ctx.send(clip_names)
+
+
+
+@bot.command()
+async def stop(ctx):
+    '''
+    disconnects from voice channel
+    functionally the same as leave
+    '''
+    global logger
+    logger.info(f'{ctx.author.name}: {ctx.message.content}')
+
+    global voice
+    voice.stop()
+    await voice.disconnect()
+
+
+
+@bot.command()
+async def leave(ctx):
+    '''
+    disconnects from voice channel
+    functionally the same as stop
+    '''
+    global logger
+    logger.info(f'{ctx.author.name}: {ctx.message.content}')
+
+    global voice
+    voice.stop()
+    await voice.disconnect()
 
 
 
