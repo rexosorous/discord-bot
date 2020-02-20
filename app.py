@@ -11,6 +11,13 @@ import db_handler as db
 
 
 '''
+DEPENDENCIES:
+    discord.py
+    PyNaCl
+    ffmpeg be installed to PATH
+'''
+
+'''
 TODO
 * error handling (ie. command syntax reminders)
 '''
@@ -259,6 +266,9 @@ async def soundboard(ctx, *search_terms):
     '''
     joins a voice channel and plays the specified soundboard clip
     '''
+    global logger
+    logger.info(f'{ctx.author.name}: {ctx.message.content}')
+
     search = ' '.join(search_terms)
     all_clips = os.listdir('soundboard/') # finds all the file names
     selected_clip = difflib.get_close_matches(search, all_clips, cutoff=0.1) # finds the file name closest to search params
@@ -280,6 +290,9 @@ async def checksoundboard(ctx):
     '''
     shows all the clips that the soundboard can play
     '''
+    global logger
+    logger.info(f'{ctx.author.name}: {ctx.message.content}')
+
     clip_names = 'All Playable Soundboard Clips:```'
     all_clips = os.listdir('soundboard/')
     for clip in all_clips:
