@@ -3,9 +3,10 @@ from discord.ext import commands
 from random import randint
 import logging
 from sys import stdout
-import difflib
+from difflib import SequenceMatcher
 import os
 import asyncio
+from itertools import combinations
 
 from exceptions import *
 import db_handler as db
@@ -28,9 +29,9 @@ TODO
 logger = logging.getLogger('gaybot')
 logger.setLevel(logging.INFO)
 file_handler = logging.FileHandler(filename='gaybot.log', encoding='utf-8', mode='w')
-file_handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:   %(message)s'))
+file_handler.setFormatter(logging.Formatter('%(asctime)s:   %(message)s'))
 console_handler = logging.StreamHandler(stdout)
-console_handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:   %(message)s'))
+console_handler.setFormatter(logging.Formatter('%(asctime)s:   %(message)s'))
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
@@ -276,13 +277,33 @@ async def soundboard(ctx, *search_terms):
     global voice
     search = ' '.join(search_terms)
     all_clips = os.listdir('soundboard/') # finds all the file names
-    selected_clip = difflib.get_close_matches(search, all_clips, cutoff=0.3) # finds the file name closest to search params
+
+    # find the file name closest to search term(s)
+    # old: selected_clip = difflib.get_close_matches(search, all_clips, cutoff=0.3)
+    selected_clip = ''
+    best_confidence = 0
+    word_count = len(search_terms)
+    check = ' '.join(search_terms)
+
+    # for each clip name, this creates each combination of substrings with x words long
+    # x being dependant on the word length of search terms
+    # and compares each combination with the search terms and determines a confidence value
+    # after going through them all, we select the clip with the highest confidence value
+    for clip_name in all_clips:
+        fixed_clip_name = clip_name[:-4] # make sure we don't compare with strings that contain .mp3
+        substrings = list(combinations(fixed_clip_name.split(' '), word_count)) # create all the combos
+        for phrase in substrings: # for each combo
+            confidence = SequenceMatcher(None, check, ' '.join(phrase)).ratio() # determine the confidence
+            if confidence > best_confidence: # save the clip if it has a higher confidence
+                selected_clip = clip_name
+                best_confidence = confidence
+
 
     try:
-        if selected_clip: # don't join the VC if we couldn't find the clip
+        if best_confidence < 0.6: # don't join the VC if we couldn't find a 'close enough' clip
             channel = ctx.message.author.voice.channel # find the voice channel of the person who sent the message
             voice = await channel.connect() # connect to said voice channel
-            voice.play(discord.FFmpegPCMAudio(f'soundboard/{selected_clip[0]}')) # play clip
+            voice.play(discord.FFmpegPCMAudio(f'soundboard/{selected_clip}')) # play clip
             while voice.is_playing(): # wait until the clip is done playing to disconnect
                 await asyncio.sleep(0.1)
             await voice.disconnect()
