@@ -300,7 +300,7 @@ async def soundboard(ctx, *search_terms):
 
 
     try:
-        if best_confidence < 0.6: # don't join the VC if we couldn't find a 'close enough' clip
+        if best_confidence > 0.6: # don't join the VC if we couldn't find a 'close enough' clip
             channel = ctx.message.author.voice.channel # find the voice channel of the person who sent the message
             voice = await channel.connect() # connect to said voice channel
             voice.play(discord.FFmpegPCMAudio(f'soundboard/{selected_clip}')) # play clip
