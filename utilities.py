@@ -1,7 +1,26 @@
 from difflib import SequenceMatcher
 from itertools import combinations
+from sys import stdout
+import logging
 import json
 import os
+
+
+
+def get_logger():
+    '''
+    initializes logger
+    '''
+    logger = logging.getLogger('gaybot')
+    logger.setLevel(logging.INFO)
+    file_handler = logging.FileHandler(filename='gaybot.log', encoding='utf-8', mode='w')
+    file_handler.setFormatter(logging.Formatter('%(asctime)s:   %(message)s'))
+    console_handler = logging.StreamHandler(stdout)
+    console_handler.setFormatter(logging.Formatter('%(asctime)s:   %(message)s'))
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+
+    return logger
 
 
 
@@ -50,10 +69,10 @@ def generate_clip_bank():
 
 
 
-def load_clip_bank() -> dict:
-    with open('clip_bank.json', 'r') as file:
-        clip_bank = json.load(file)
-    return clip_bank
+def load_file(filename: str) -> dict:
+    with open(filename, 'r') as file:
+        contents = json.load(file)
+    return contents
 
 
 
