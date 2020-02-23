@@ -16,7 +16,6 @@ DEPENDENCIES:
 
 '''
 TODO
-* cleanup imports
 * implement a queue system for sound clips
 * allow the bot to be in more than one voice channel at a time
 * error handling (ie. command syntax reminders)
@@ -31,10 +30,11 @@ class GayBot(commands.Cog):
         self.mock_img = discord.File('images/mock.jpg')
         self.yike_img = discord.File('images/yike.png')
 
+        self.logger = util.get_logger()
         self.quote_channel_id = 178576825511837696
         self.voice = None
         self.clip_bank = util.load_file('clip_bank.json')
-        self.logger = util.get_logger()
+        self.clip_queue = []
 
 
 
@@ -210,15 +210,18 @@ class GayBot(commands.Cog):
 
         word_count = len(search_terms)
         search = ' '.join(search_terms)
-        selected_clip = util.get_clip(search, self.clip_bank[str(word_count)])
+        self.clip_queue.append(util.get_clip(search, self.clip_bank[str(word_count)]))
 
         try:
-            channel = ctx.message.author.voice.channel # find the voice channel of the person who sent the message
-            self.voice = await channel.connect() # connect to said voice channel
-            self.voice.play(discord.FFmpegPCMAudio(f'soundboard/{selected_clip}')) # play clip
-            while self.voice.is_playing(): # wait until the clip is done playing to disconnect
-                await asyncio.sleep(0.1)
-            await self.voice.disconnect()
+            if not self.voice or not self.voice.is_connected():
+                channel = ctx.message.author.voice.channel # find the voice channel of the person who sent the message
+                self.voice = await channel.connect() # connect to said voice channel
+                while self.clip_queue:
+                    self.voice.play(discord.FFmpegPCMAudio(f'soundboard/{self.clip_queue.pop(0)}')) # play clip
+                    while self.voice.is_playing(): # wait until the clip is done playing to disconnect
+                        await asyncio.sleep(0.1)
+                    await asyncio.sleep(1)
+                await self.voice.disconnect()
         except AttributeError:
             await ctx.send('you are not in a voice channel')
 

@@ -1,11 +1,11 @@
 from difflib import SequenceMatcher
 from itertools import combinations
 from random import randint
+import db_handler as db
 from sys import stdout
 from os import listdir
 import logging
 import json
-import db
 
 
 
