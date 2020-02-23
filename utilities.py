@@ -1,9 +1,40 @@
 from difflib import SequenceMatcher
 from itertools import combinations
+from random import randint
 from sys import stdout
 import logging
 import json
 import os
+import db
+
+
+
+commands = ('```'
+            'bot COMMANDS\n'
+            'note: all commands must be preceeded by "gay ". ex: "gay help"\n'
+            'note: all instances of <user> can be pings with @ or name shorthands. ex: "gay mock @GayZach" is the same as "gay mock j-zach"\n'
+            'github link: https://github.com/rexosorous/discord-self.bot\n\n'
+            'help                       displays this message.\n'
+            'checknicknames             shows all the users who have nicknames for quick referencing\n'
+            'mock <user>                randomizes the capitlization in that user\'s last message in this channel.\n'
+            'yikes <user>               awards that user with a yikes.\n'
+            'checkyikes <user>          checks how many yikes that user has been awarded.\n'
+            'bruh                       shows the bruh copy pasta.\n'
+            'emoji <emoji name>         uses this server\'s emoji even if it\'s nitro gated. note: don\'t surround the emoji name with colons.\n'
+            'quote <user> <num>         posts in the quote channel with the user\'s last num messages in this channel\n'
+            'soundboard <clip name>     joins the voice channel and plays the specified clip\n'
+            'checksoundboard            shows all the clips names that the soundboard can play\n'
+            'stop                       stops the soundboard clip and leaves the audio channel\n'
+            'leave                      same as stop\n'
+            'scan                       scans the server\'s users to update the self.bot\'s database. use if new users join.'
+            '```')
+
+
+
+def load_file(filename: str) -> dict:
+    with open(filename, 'r') as file:
+        contents = json.load(file)
+    return contents
 
 
 
@@ -69,13 +100,6 @@ def generate_clip_bank():
 
 
 
-def load_file(filename: str) -> dict:
-    with open(filename, 'r') as file:
-        contents = json.load(file)
-    return contents
-
-
-
 def get_clip(search: str, focused_clip_bank: dict) -> str:
     '''
     finds the soundboard filename with the highest confidence
@@ -93,3 +117,31 @@ def get_clip(search: str, focused_clip_bank: dict) -> str:
             best_confidence = confidence
 
     return selected_clip
+
+
+
+def get_nicknames() -> str:
+    '''
+    searches the users db and gets a list of all users and their respective nicknames
+    '''
+    nicknames = db.get_nicknames()
+    msg = 'all users with nicknames\n```username: nickname'
+    for user in nicknames:
+        msg += f"\n{user['username']}: {user['nickname']}"
+    msg += '```\nif a name is not on here, they either don\'t have a nickname or are not initialized in the database'
+    msg += '\nif you would like to change or add a nickname, message j-zach'
+    return msg
+
+
+
+def mock_msg(original: str) -> str:
+    '''
+    randomizes the capitalization of every character in a string
+    '''
+    mocked = ''
+    for char in original:
+        if randint(0, 1) == 1:
+            mocked += char.upper()
+        else:
+            mocked += char.lower()
+    return mocked

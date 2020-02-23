@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from random import randint
 import os
 import asyncio
 
@@ -18,6 +17,9 @@ DEPENDENCIES:
 
 '''
 TODO
+* cleanup imports
+* implement a queue system for sound clips
+* allow the bot to be in more than one voice channel at a time
 * error handling (ie. command syntax reminders)
 '''
 
@@ -43,27 +45,7 @@ class GayBot(commands.Cog):
         shows all the commands and their syntax
         '''
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
-
-        commands = ('```'
-                    'bot COMMANDS\n'
-                    'note: all commands must be preceeded by "gay ". ex: "gay help"\n'
-                    'note: all instances of <user> can be pings with @ or name shorthands. ex: "gay mock @GayZach" is the same as "gay mock j-zach"\n'
-                    'github link: https://github.com/rexosorous/discord-self.bot\n\n'
-                    'help                       displays this message.\n'
-                    'checknicknames             shows all the users who have nicknames for quick referencing\n'
-                    'mock <user>                randomizes the capitlization in that user\'s last message in this channel.\n'
-                    'yikes <user>               awards that user with a yikes.\n'
-                    'checkyikes <user>          checks how many yikes that user has been awarded.\n'
-                    'bruh                       shows the bruh copy pasta.\n'
-                    'emoji <emoji name>         uses this server\'s emoji even if it\'s nitro gated. note: don\'t surround the emoji name with colons.\n'
-                    'quote <user> <num>         posts in the quote channel with the user\'s last num messages in this channel\n'
-                    'soundboard <clip name>     joins the voice channel and plays the specified clip\n'
-                    'checksoundboard            shows all the clips names that the soundboard can play\n'
-                    'stop                       stops the soundboard clip and leaves the audio channel\n'
-                    'leave                      same as stop\n'
-                    'scan                       scans the server\'s users to update the self.bot\'s database. use if new users join.'
-                    '```')
-        await ctx.send(commands)
+        await ctx.send(util.commands)
 
 
 
@@ -73,13 +55,7 @@ class GayBot(commands.Cog):
         gets a list of all users with a nickname
         '''
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
-
-        nicknames = db.get_nicknames()
-        msg = 'all users with nicknames\n```username: nickname'
-        for user in nicknames:
-            msg += f"\n{user['username']}: {user['nickname']}"
-        msg += '```\nif a name is not on here, they either don\'t have a nickname or are not initialized in the database'
-        msg += '\nif you would like to change or add a nickname, message j-zach'
+        util.get_nicknames()
         await ctx.send(msg)
 
 
@@ -100,15 +76,10 @@ class GayBot(commands.Cog):
 
         async for msg in ctx.channel.history(limit=100):
             if msg.author.id == user_id and not msg.content.startswith('gay '): # get user's last message that's not a bot command
-                mocked = ''
-                for char in msg.content: # randomize what character is uppercase and lowercase
-                    if randint(0, 1) == 1:
-                        mocked += char.upper()
-                    else:
-                        mocked += char.lower()
+                mocked = util.mock_msg(msg.content)
                 self.logger.info(mocked)
                 await ctx.send(mocked)
-                await ctx.send(file=mock_img)
+                await ctx.send(file=self.mock_img)
                 return
 
 
@@ -129,7 +100,7 @@ class GayBot(commands.Cog):
             db.add_yikes(ping[ping.find('@')+1:-1]) # a really round about way to get the id
             self.logger.info(f'{recipient} received one yikes')
             await ctx.send(ping)
-            await ctx.send(file=yike_img)
+            await ctx.send(file=self.yike_img)
         except UserNotFound:
             self.logger.error(f'could not find {recipient} in database')
             await ctx.send(f'could not find {recipient}')
@@ -170,7 +141,6 @@ class GayBot(commands.Cog):
         bruh copy pasta
         '''
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
-
         await ctx.send(':warning:BRUH:warning:...:warning:BRUH:warning:...:warning:BRUH:warning:... \n\nThe :police_officer: Department of :house: Homeland :statue_of_liberty: Security :oncoming_police_car: has issued a :b:ruh Moment :warning: warning :construction: for the following districts: Ligma, Sugma, :b:ofa, and Sugondese. \n\nNumerous instances of :b:ruh moments :b:eing triggered by :eyes: cringe:grimacing: normies :toilet: have :alarm_clock: recently :clock2: occurred across the :earth_americas: continental :flag_us:United States:flag_us:. These individuals are :b:elieved to :b:e highly :gun: dangerous :knife: and should :no_entry_sign: not :x: :b:e approached. Citizens are instructed to remain inside and :lock:lock their :door:doors. \n\nUnder :x:no:no_entry: circumstances should any citizen :speak_no_evil: say "bruh" in reaction to an action performed :b:y a cringe:grimacing: normie:toilet: and should store the following items in a secure:lock: location: Jahcoins:euro:, V-bucks:yen:, Gekyume\'s foreskin:eggplant:, poop:poop: socks, juul:thought_balloon: pods, ball :cherries: crushers, and dip. \n\nRemain tuned for further instructions. \n\n:warning:BRUH:warning:...:warning:BRUH:warning:...:warning:BRUH:warning:...')
 
 
