@@ -2,9 +2,9 @@ from difflib import SequenceMatcher
 from itertools import combinations
 from random import randint
 from sys import stdout
+from os import listdir
 import logging
 import json
-import os
 import db
 
 
@@ -60,7 +60,7 @@ def get_max_word_count() -> int:
     returns the longest word count of all soundboard files
     '''
     max_word_count = 0
-    for file_name in os.listdir('soundboard/'):
+    for file_name in listdir('soundboard/'):
         word_count = len(file_name.split(' '))
         if word_count > max_word_count:
             max_word_count = word_count
@@ -82,7 +82,7 @@ def generate_clip_bank():
         clip_bank[i] = {}
 
     # populate
-    for file_name in os.listdir('soundboard/'):
+    for file_name in listdir('soundboard/'):
         fixed_file_name = file_name[:-4]
         word_list = fixed_file_name.split(' ')
         word_count = len(word_list)
@@ -145,3 +145,8 @@ def mock_msg(original: str) -> str:
         else:
             mocked += char.lower()
     return mocked
+
+
+
+def get_filenames(dir: str) -> [str]:
+    return listdir(dir)

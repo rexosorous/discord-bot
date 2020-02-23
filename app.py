@@ -1,11 +1,10 @@
-import discord
 from discord.ext import commands
-import os
+import discord
 import asyncio
 
+import utilities as util
 from exceptions import *
 import db_handler as db
-import utilities as util
 
 
 '''
@@ -233,7 +232,7 @@ class GayBot(commands.Cog):
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
 
         clip_names = 'All Playable Soundboard Clips:```'
-        all_clips = os.listdir('soundboard/')
+        all_clips = util.get_filenames('soundboard/')
         for clip in all_clips:
             clip_names += (clip[:-4] + '\n')
         clip_names += '```'
