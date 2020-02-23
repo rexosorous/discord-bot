@@ -3,13 +3,12 @@ from discord.ext import commands
 from random import randint
 import logging
 from sys import stdout
-from difflib import SequenceMatcher
 import os
 import asyncio
-from itertools import combinations
 
 from exceptions import *
 import db_handler as db
+import utilities as util
 
 
 '''
@@ -45,6 +44,7 @@ yike_img = discord.File('images/yike.png')
 
 quote_channel_id = 178576825511837696
 voice = None
+clip_bank = None
 
 
 
@@ -52,11 +52,19 @@ voice = None
 async def on_ready():
     global logger
     logger.info(f'logged in as {bot.user.name}')
+
+    # init users
     logger.info('initializing user data')
     for guild in bot.guilds:
         for member in guild.members:
             if not member.bot:
                 db.init_user(str(member.id), member.name)
+
+    # init clip names for soundboard
+    global clip_bank
+    logger.info('initializing soundboard file names')
+    clip_bank = util.load_clip_bank()
+
     logger.info('finished initializing')
     logger.info('bot ready!')
     logger.info('awaiting commands ...\n\n\n')
@@ -275,40 +283,18 @@ async def soundboard(ctx, *search_terms):
     logger.info(f'{ctx.author.name}: {ctx.message.content}')
 
     global voice
-    search = ' '.join(search_terms)
-    all_clips = os.listdir('soundboard/') # finds all the file names
-
-    # find the file name closest to search term(s)
-    # old: selected_clip = difflib.get_close_matches(search, all_clips, cutoff=0.3)
-    selected_clip = ''
-    best_confidence = 0
+    global clip_bank
     word_count = len(search_terms)
-    check = ' '.join(search_terms)
-
-    # for each clip name, this creates each combination of substrings with x words long
-    # x being dependant on the word length of search terms
-    # and compares each combination with the search terms and determines a confidence value
-    # after going through them all, we select the clip with the highest confidence value
-    for clip_name in all_clips:
-        fixed_clip_name = clip_name[:-4] # make sure we don't compare with strings that contain .mp3
-        substrings = list(combinations(fixed_clip_name.split(' '), word_count)) # create all the combos
-        for phrase in substrings: # for each combo
-            confidence = SequenceMatcher(None, check, ' '.join(phrase)).ratio() # determine the confidence
-            if confidence > best_confidence: # save the clip if it has a higher confidence
-                selected_clip = clip_name
-                best_confidence = confidence
-
+    search = ' '.join(search_terms)
+    selected_clip = util.get_clip(search, clip_bank[str(word_count)])
 
     try:
-        if best_confidence > 0.6: # don't join the VC if we couldn't find a 'close enough' clip
-            channel = ctx.message.author.voice.channel # find the voice channel of the person who sent the message
-            voice = await channel.connect() # connect to said voice channel
-            voice.play(discord.FFmpegPCMAudio(f'soundboard/{selected_clip}')) # play clip
-            while voice.is_playing(): # wait until the clip is done playing to disconnect
-                await asyncio.sleep(0.1)
-            await voice.disconnect()
-        else:
-            await ctx.send('could not find any clips with that search term')
+        channel = ctx.message.author.voice.channel # find the voice channel of the person who sent the message
+        voice = await channel.connect() # connect to said voice channel
+        voice.play(discord.FFmpegPCMAudio(f'soundboard/{selected_clip}')) # play clip
+        while voice.is_playing(): # wait until the clip is done playing to disconnect
+            await asyncio.sleep(0.1)
+        await voice.disconnect()
     except AttributeError:
         await ctx.send('you are not in a voice channel')
 
