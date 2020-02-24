@@ -58,9 +58,9 @@ class GayBot(commands.Cog):
 
 
     @commands.command()
-    async def mock(self, ctx, user):
+    async def mock(self, ctx, user, count=1):
         '''
-        gets specified user's last message and mocks it
+        gets specified user's last count messages and mocks it
         ex: hello world -> hELlO woRLd
         '''
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
@@ -71,13 +71,23 @@ class GayBot(commands.Cog):
         else:
             user_id = ctx.message.mentions[0].id
 
+        count = int(count)
+        quote = ''
         async for msg in ctx.channel.history(limit=100):
             if msg.author.id == user_id and not msg.content.startswith('gay '): # get user's last message that's not a bot command
-                mocked = util.mock_msg(msg.content)
-                self.logger.info(mocked)
-                await ctx.send(mocked)
-                await ctx.send(file=self.mock_img)
-                return
+                if quote:
+                    quote = msg.content + '\n' + quote
+                else:
+                    quote = msg.content
+
+                count -= 1
+                if count <= 0:
+                    break
+
+        mocked = util.mock_msg(quote)
+        self.logger.info(mocked)
+        await ctx.send(mocked)
+        await ctx.send(file=self.mock_img)
 
 
 
