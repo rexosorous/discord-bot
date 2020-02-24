@@ -107,4 +107,6 @@ venv.bak/
 token.txt
 gaybot.log
 users.db
-clip_bank.json
+discordbot.pem
+discordbot.ppk
+clip_banks/
