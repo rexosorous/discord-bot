@@ -26,8 +26,8 @@ class GayBot(commands.Cog):
         self.bot = bot
 
         # images
-        self.mock_img = discord.File('images/mock.jpg')
-        self.yike_img = discord.File('images/yike.png')
+        self.mock_img = 'images/mock.jpg'
+        self.yike_img = 'images/yike.png'
 
         self.logger = util.get_logger()
         self.quote_channel_id = 178576825511837696
@@ -87,7 +87,7 @@ class GayBot(commands.Cog):
         mocked = util.mock_msg(quote)
         self.logger.info(mocked)
         await ctx.send(mocked)
-        await ctx.send(file=self.mock_img)
+        await ctx.send(file=discord.File(self.mock_img))
 
 
 
@@ -107,7 +107,7 @@ class GayBot(commands.Cog):
             db.add_yikes(ping[ping.find('@')+1:-1]) # a really round about way to get the id
             self.logger.info(f'{recipient} received one yikes')
             await ctx.send(ping)
-            await ctx.send(file=self.yike_img)
+            await ctx.send(file=discord.File(self.yike_img))
         except UserNotFound:
             self.logger.error(f'could not find {recipient} in database')
             await ctx.send(f'could not find {recipient}')
