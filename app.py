@@ -1,10 +1,10 @@
 from discord.ext import commands
 import discord
-import asyncio
 
 import utilities as util
 from exceptions import *
 import db_handler as db
+import voice
 
 
 '''
@@ -16,8 +16,7 @@ DEPENDENCIES:
 
 '''
 TODO
-* implement a queue system for sound clips
-* allow the bot to be in more than one voice channel at a time
+* figure out a way to delete self.voice[server] when it's done to save on memory
 * error handling (ie. command syntax reminders)
 '''
 
@@ -32,9 +31,8 @@ class GayBot(commands.Cog):
 
         self.logger = util.get_logger()
         self.quote_channel_id = 178576825511837696
-        self.voice = None
+        self.voice = {}
         self.clip_bank = util.load_file('clip_bank.json')
-        self.clip_queue = []
 
 
 
@@ -210,19 +208,20 @@ class GayBot(commands.Cog):
 
         word_count = len(search_terms)
         search = ' '.join(search_terms)
-        self.clip_queue.append(util.get_clip(search, self.clip_bank[str(word_count)]))
+        clip_name = util.get_clip(search, self.clip_bank[str(word_count)])
 
         try:
-            if not self.voice or not self.voice.is_connected():
-                channel = ctx.message.author.voice.channel # find the voice channel of the person who sent the message
-                self.voice = await channel.connect() # connect to said voice channel
-                while self.clip_queue:
-                    self.voice.play(discord.FFmpegPCMAudio(f'soundboard/{self.clip_queue.pop(0)}')) # play clip
-                    while self.voice.is_playing(): # wait until the clip is done playing to disconnect
-                        await asyncio.sleep(0.1)
-                    await asyncio.sleep(1)
-                await self.voice.disconnect()
-        except AttributeError:
+            server = ctx.guild
+            channel = ctx.message.author.voice.channel
+            if server not in self.voice: # a bot can only be in one voice channel per server
+                self.voice[server] = voice.VoiceHandler(clip_name)
+                await self.voice[server].connect(channel)
+                await self.voice[server].play()
+            elif not self.voice[server].active:
+                await self.voice[server].change_channel(channel, clip_name)
+            else:
+                self.voice[server].add_queue(clip_name)
+        except InvalidAudioChannel:
             await ctx.send('you are not in a voice channel')
 
 
