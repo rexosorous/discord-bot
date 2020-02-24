@@ -75,11 +75,7 @@ class GayBot(commands.Cog):
         quote = ''
         async for msg in ctx.channel.history(limit=100):
             if msg.author.id == user_id and not msg.content.startswith('gay '): # get user's last message that's not a bot command
-                if quote:
-                    quote = msg.content + '\n' + quote
-                else:
-                    quote = msg.content
-
+                quote = util.build_quote(quote, msg.content)
                 count -= 1
                 if count <= 0:
                     break
@@ -191,21 +187,15 @@ class GayBot(commands.Cog):
         if username.startswith('@'):
             username = username[1:]
 
-        searched = 0
         quote = ''
         async for msg in ctx.channel.history(limit=100):
             if msg.author.id == user_id and not msg.content.startswith('gay '): # get user's last message that's not a bot command
-                # gets rid of hanging '\n'
-                if quote:
-                    quote = msg.content + '\n' + quote
-                else:
-                    quote = msg.content
+                quote = util.build_quote(quote, msg.content)
+                count -= 1
+                if count <= 0:
+                    break
 
-                searched += 1
-                if count:
-                    if searched >= count:
-                        await self.bot.get_channel(self.quote_channel_id).send(f'"{quote}" -{username}')
-                        return
+        await self.bot.get_channel(self.quote_channel_id).send(f'"{quote}" -{username}')
 
 
 

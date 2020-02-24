@@ -150,3 +150,17 @@ def mock_msg(original: str) -> str:
 
 def get_filenames(dir: str) -> [str]:
     return listdir(dir)
+
+
+
+def build_quote(quote: str, add) -> str:
+    '''
+    builds quotes with correct formatting
+    because crawling messages goes from recent to old, we need to make sure when we print it,
+    it shows the old on top of the new without and hanging newlines
+    '''
+    if quote:
+        quote = add + '\n' + quote
+    else:
+        quote = add
+    return quote
