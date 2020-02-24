@@ -52,8 +52,7 @@ class GayBot(commands.Cog):
         gets a list of all users with a nickname
         '''
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
-        util.get_nicknames()
-        await ctx.send(msg)
+        await ctx.send(util.get_nicknames())
 
 
 
@@ -195,6 +194,7 @@ class GayBot(commands.Cog):
                 if count <= 0:
                     break
 
+        self.logger.info(f'"{quote}" -{username}')
         await self.bot.get_channel(self.quote_channel_id).send(f'"{quote}" -{username}')
 
 
@@ -214,14 +214,18 @@ class GayBot(commands.Cog):
             server = ctx.guild
             channel = ctx.message.author.voice.channel
             if server not in self.voice: # a bot can only be in one voice channel per server
+                self.logger.info(f'creating {server} voice bot, connecting to {channel} and playing {clip_name}')
                 self.voice[server] = voice.VoiceHandler(clip_name)
                 await self.voice[server].connect(channel)
                 await self.voice[server].play()
             elif not self.voice[server].active:
+                self.logger.info(f'switching {server} voice channels to {channel} and playing {clip_name}')
                 await self.voice[server].change_channel(channel, clip_name)
             else:
+                self.logger.info(f'adding {clip_name} to {server}\'s audio queue in {channel}')
                 self.voice[server].add_queue(clip_name)
         except InvalidAudioChannel:
+            self.logger.error('user is not in a valid voice channel')
             await ctx.send('you are not in a voice channel')
 
 
@@ -249,8 +253,9 @@ class GayBot(commands.Cog):
         functionally the same as leave
         '''
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
-        self.voice.stop()
-        await voice.disconnect()
+        server = ctx.guild
+        self.voice[server].disconnect()
+        del self.voice[server]
 
 
 
@@ -261,8 +266,9 @@ class GayBot(commands.Cog):
         functionally the same as stop
         '''
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
-        self.stop()
-        await voice.disconnect()
+        server = ctx.guild
+        self.voice[server].disconnect()
+        del self.voice[server]
 
 
 
