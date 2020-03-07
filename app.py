@@ -208,7 +208,7 @@ class GayBot(commands.Cog):
 
         word_count = len(search_terms)
         search = ' '.join(search_terms)
-        clip_name = util.get_clip(search, self.clip_bank[str(word_count)])
+        clip_name = util.get_clip(search, self.clip_bank[word_count])
 
         try:
             server = ctx.guild
@@ -238,7 +238,7 @@ class GayBot(commands.Cog):
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
 
         clip_names = 'All Playable Soundboard Clips:```'
-        for clip in (all_clips := util.get_filename('soundboard/')):
+        for clip in util.get_filenames('soundboard/'):
             clip_names += (clip[:-4] + '\n')
         clip_names += '```'
         await ctx.send(clip_names)

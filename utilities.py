@@ -68,7 +68,7 @@ def get_max_word_count() -> int:
 
 
 
-def generate_clip_bank():
+def generate_clip_bank() -> dict:
     '''
     generates a json file with all consecutive combinations of every soundboard file name
     clip_bank[2] is a dict with keys being combinations of 3 consecutive words of every soundboard file name and keys being the file name
@@ -99,12 +99,11 @@ def generate_clip_bank():
             if phrase not in skip:
                 clip_bank[len(phrase_list)][phrase] = file_name
 
-    with open('clip_bank.json', 'w+') as file:
-        json.dump(clip_bank, file)
+    return clip_bank
 
 
 
-def get_clip(search: str, focused_clip_bank: dict) -> str:
+def get_clip(search: str, clip_bank: dict) -> str:
     '''
     finds the soundboard filename with the highest confidence
     for each filename, we've generated all the possible combinations of every word-length and sorted it all by word count
@@ -114,10 +113,10 @@ def get_clip(search: str, focused_clip_bank: dict) -> str:
     selected_clip = ''
     best_confidence = 0
 
-    for phrase in focused_clip_bank:
+    for phrase in clip_bank:
         confidence = SequenceMatcher(None, search, phrase).ratio()
         if confidence > best_confidence:
-            selected_clip = focused_clip_bank[phrase]
+            selected_clip = clip_bank[phrase]
             best_confidence = confidence
 
     return selected_clip
