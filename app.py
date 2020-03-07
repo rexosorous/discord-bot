@@ -32,7 +32,7 @@ class GayBot(commands.Cog):
         self.logger = util.get_logger()
         self.quote_channel_id = 178576825511837696
         self.voice = {}
-        self.clip_bank = generate_clip_bank()
+        self.clip_bank = util.generate_clip_bank()
 
 
 
