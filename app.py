@@ -32,7 +32,7 @@ class GayBot(commands.Cog):
         self.logger = util.get_logger()
         self.quote_channel_id = 178576825511837696
         self.voice = {}
-        self.clip_bank = util.load_file('clip_bank.json')
+        self.clip_bank = generate_clip_bank()
 
 
 
@@ -238,8 +238,7 @@ class GayBot(commands.Cog):
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
 
         clip_names = 'All Playable Soundboard Clips:```'
-        all_clips = util.get_filenames('soundboard/')
-        for clip in all_clips:
+        for clip in (all_clips := util.get_filename('soundboard/')):
             clip_names += (clip[:-4] + '\n')
         clip_names += '```'
         await ctx.send(clip_names)
