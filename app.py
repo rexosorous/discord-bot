@@ -238,9 +238,8 @@ class GayBot(commands.Cog):
         randomly selects an audio clip for gay soundboard to play
         '''
         all_clips = util.get_filenames('soundboard/')
-        for _ in range(count):
-            selected_clip = random.choice(all_clips)
-            await self.soundboard(ctx, selected_clip[:-4])
+        selected_clip = random.choice(all_clips)
+        await self.soundboard(ctx, selected_clip[:-4])
 
 
 
