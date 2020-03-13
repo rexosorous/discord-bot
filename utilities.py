@@ -23,6 +23,7 @@ commands = ('```'
             'emoji <emoji name>         uses this server\'s emoji even if it\'s nitro gated. note: don\'t surround the emoji name with colons.\n'
             'quote <user> <num>         posts in the quote channel with the user\'s last num messages in this channel\n'
             'soundboard <clip name>     joins the voice channel and plays the specified clip\n'
+            'cliproulette               selects a random soundboard clip to play\n'
             'checksoundboard            shows all the clips names that the soundboard can play\n'
             'stop                       stops the soundboard clip and leaves the audio channel\n'
             'leave                      same as stop\n'
@@ -44,7 +45,7 @@ def get_logger():
     '''
     logger = logging.getLogger('gaybot')
     logger.setLevel(logging.INFO)
-    file_handler = logging.FileHandler(filename='gaybot.log', encoding='utf-8', mode='w')
+    file_handler = logging.FileHandler(filename='gaybot.log', encoding='utf-8', mode='a')
     file_handler.setFormatter(logging.Formatter('%(asctime)s:   %(message)s'))
     console_handler = logging.StreamHandler(stdout)
     console_handler.setFormatter(logging.Formatter('%(asctime)s:   %(message)s'))

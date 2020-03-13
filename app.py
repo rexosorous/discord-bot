@@ -1,5 +1,6 @@
 from discord.ext import commands
 import discord
+import random
 
 import utilities as util
 from exceptions import *
@@ -228,6 +229,18 @@ class GayBot(commands.Cog):
         except InvalidAudioChannel:
             self.logger.error('user is not in a valid voice channel')
             await ctx.send('you are not in a voice channel')
+
+
+
+    @commands.command()
+    async def cliproulette(self, ctx):
+        '''
+        randomly selects an audio clip for gay soundboard to play
+        '''
+        all_clips = util.get_filenames('soundboard/')
+        for _ in range(count):
+            selected_clip = random.choice(all_clips)
+            await self.soundboard(ctx, selected_clip[:-4])
 
 
 
