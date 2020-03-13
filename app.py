@@ -16,6 +16,7 @@ DEPENDENCIES:
 
 '''
 TODO
+* allow the bot to stop soundclips midway through
 * figure out a way to delete self.voice[server] when it's done to save on memory
 * error handling (ie. command syntax reminders)
 '''
@@ -237,11 +238,14 @@ class GayBot(commands.Cog):
         '''
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
 
-        clip_names = 'All Playable Soundboard Clips:```'
+        clip_names = []
         for clip in util.get_filenames('soundboard/'):
-            clip_names += (clip[:-4] + '\n')
-        clip_names += '```'
-        await ctx.send(clip_names)
+            clip_names.append(f'{clip[:-4]}')
+        clip_names.sort()
+        clip_names.insert(0, 'All Playable Soundboard Clips:```')
+        clip_names.append('```')
+        msg = '\n'.join(clip_names)
+        await ctx.send(msg)
 
 
 
