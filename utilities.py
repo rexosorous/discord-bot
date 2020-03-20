@@ -113,7 +113,7 @@ def get_clip(search: str, clip_bank: dict) -> str:
     selected_clip = ''
     best_confidence = 0
 
-    for phrase in clip_bank:        
+    for phrase in clip_bank:
         confidence = SequenceMatcher(None, search, phrase).ratio()
         if confidence > best_confidence:
             selected_clip = clip_bank[phrase]
@@ -151,19 +151,19 @@ def get_clipv2(clip_bank: dict, searchTerms) -> str:
         if( totalConfidence < bestConfidence ):
             bestClip = clipStr
             bestConfidence = totalConfidence
-    return bestClip
-            
+    return clip_bank[bestClip]
+
 
 
 
 
 def levenshteinDistance(s, t):
-    """ 
+    """
         iterative_levenshtein(s, t) -> ldist
-        ldist is the Levenshtein distance between the strings 
+        ldist is the Levenshtein distance between the strings
         s and t.
-        For all i and j, dist[i,j] will contain the Levenshtein 
-        distance between the first i characters of s and the 
+        For all i and j, dist[i,j] will contain the Levenshtein
+        distance between the first i characters of s and the
         first j characters of t
     """
 
@@ -173,7 +173,7 @@ def levenshteinDistance(s, t):
     cols = len(t)+1
     dist = [[0 for x in range(cols)] for x in range(rows)]
 
-    # source prefixes can be transformed into empty strings 
+    # source prefixes can be transformed into empty strings
     # by deletions:
     for i in range(1, rows):
         dist[i][0] = i
@@ -182,7 +182,7 @@ def levenshteinDistance(s, t):
     # by inserting the characters
     for i in range(1, cols):
         dist[0][i] = i
-        
+
     for col in range(1, cols):
         for row in range(1, rows):
             if s[row-1] == t[col-1]:
@@ -197,7 +197,7 @@ def levenshteinDistance(s, t):
                                  substitution)  # substitution
             if( substitution < insertion and substitution < deletion ):
                 subs += 1
-    
+
     return dist[row][col],subs
 
 
