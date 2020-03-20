@@ -23,7 +23,14 @@ class Users(BaseModel):
     yikes = peewee.IntegerField()
 
 
+class Clips(BaseModel):
+    name = peewee.CharField()
+    total_play_count = peewee.IntegerField()
+    roulette_play_count = peewee.IntegerField()
+    soundboard_play_count = peewee.IntegerField()
 
+
+db.create_tables([Users, Clips])
 
 
 
@@ -87,3 +94,27 @@ def get_yikes_from_uname(uname: str) -> int:
         return user.yikes
     except User.DoesNotExist:
         raise UserNotFound
+
+
+
+def add_clip_stat(clip_name: str, type_: str):
+    try:
+        clip = Clips.get(Clips.name==clip_name)
+    except peewee.DoesNotExist:
+        clip = Clips.create(name=clip_name, total_play_count=0, roulette_play_count=0, soundboard_play_count=0)
+    finally:
+        clip.total_play_count += 1
+        if type_ == 'roulette':
+            clip.roulette_play_count += 1
+        elif type_ =='soundboard':
+            clip.soundboard_play_count += 1
+        clip.save()
+
+
+
+def get_clip_stats() -> str:
+    stats = '```Clip Name                                                                        | Soundboard | Roulette | Total\n'
+    for clip in Clips.select():
+        stats += '%(name)-.80s | %(soundboard_play_count)-10i | %(roulette_play_count)-8i | %(total_play_count)-5i\n' % clip.__dict__['__data__']
+    stats += '```'
+    return stats

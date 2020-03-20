@@ -99,9 +99,6 @@ def generate_clip_bank() -> dict:
                 skip.append(phrase)
             if phrase not in skip:
                 clip_bank[len(phrase_list)][phrase] = file_name
-
-    for phrase in skip:
-        print(phrase)
     return clip_bank
 
 

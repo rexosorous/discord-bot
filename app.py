@@ -210,8 +210,9 @@ class GayBot(commands.Cog):
 
         word_count = len(search_terms)
         search = ' '.join(search_terms)
-        #clip_name = util.get_clip(search, self.clip_bank[word_count])
         clip_name = util.get_clipv2(self.clip_bank[word_cout], search_terms)
+        # clip_name = util.get_clip(search, self.clip_bank[word_count])
+        db.add_clip_stat(clip_name[:-4], 'soundboard')
 
         try:
             server = ctx.guild
@@ -240,6 +241,7 @@ class GayBot(commands.Cog):
         '''
         all_clips = util.get_filenames('soundboard/')
         selected_clip = random.choice(all_clips)
+        db.add_clip_stat(selected_clip[:-4], 'roulette')
         await self.soundboard(ctx, selected_clip[:-4])
 
 
@@ -259,6 +261,16 @@ class GayBot(commands.Cog):
         clip_names.append('```')
         msg = '\n'.join(clip_names)
         await ctx.send(msg)
+
+
+
+    @commands.command()
+    async def soundboardstats(self, ctx):
+        '''
+        shows the stats for all the clips
+        '''
+        self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
+        await ctx.send(db.get_clip_stats())
 
 
 
