@@ -210,7 +210,8 @@ class GayBot(commands.Cog):
 
         word_count = len(search_terms)
         search = ' '.join(search_terms)
-        clip_name = util.get_clip(search, self.clip_bank[word_count])
+        #clip_name = util.get_clip(search, self.clip_bank[word_count])
+        clip_name = util.get_clipv2(self.clip_bank[word_cout], search_terms)
 
         try:
             server = ctx.guild

@@ -116,13 +116,92 @@ def get_clip(search: str, clip_bank: dict) -> str:
     selected_clip = ''
     best_confidence = 0
 
-    for phrase in clip_bank:
+    for phrase in clip_bank:        
         confidence = SequenceMatcher(None, search, phrase).ratio()
         if confidence > best_confidence:
             selected_clip = clip_bank[phrase]
             best_confidence = confidence
 
     return selected_clip
+
+
+def get_clipv2(clip_bank: dict, searchTerms) -> str:
+    # Fuck me this is computationally intensive
+    bestClip = ''
+    bestConfidence = 100000
+    for clipStr in clip_bank:
+        totalConfidence = 0
+        for searchWord in searchTerms:
+            index = clipStr.find( searchWord )
+            if( index < 0 ):
+                #Word not found. looking for next best...
+                clipWordList = clipStr.split(' ')
+                bestDistance = 100000
+                bestWord = clipWordList[0]
+                for clipWord in clipWordList:
+                    curDistance,subs = levenshteinDistance( searchWord, clipWord )
+                    curDistance += subs * 10
+                    if( curDistance < bestDistance ):
+                        bestDistance = curDistance
+                        bestWord = clipWord
+                index = clipStr.find( bestWord )
+                index += bestDistance
+            totalConfidence += index
+            if( totalConfidence > bestConfidence ):
+                # Minor optimization
+                totalConfidence = 100000
+                break
+        if( totalConfidence < bestConfidence ):
+            bestClip = clipStr
+            bestConfidence = totalConfidence
+    return bestClip
+            
+
+
+
+
+def levenshteinDistance(s, t):
+    """ 
+        iterative_levenshtein(s, t) -> ldist
+        ldist is the Levenshtein distance between the strings 
+        s and t.
+        For all i and j, dist[i,j] will contain the Levenshtein 
+        distance between the first i characters of s and the 
+        first j characters of t
+    """
+
+    subs = 0
+
+    rows = len(s)+1
+    cols = len(t)+1
+    dist = [[0 for x in range(cols)] for x in range(rows)]
+
+    # source prefixes can be transformed into empty strings 
+    # by deletions:
+    for i in range(1, rows):
+        dist[i][0] = i
+
+    # target prefixes can be created from an empty source string
+    # by inserting the characters
+    for i in range(1, cols):
+        dist[0][i] = i
+        
+    for col in range(1, cols):
+        for row in range(1, rows):
+            if s[row-1] == t[col-1]:
+                cost = 0
+            else:
+                cost = 1
+            deletion = dist[row-1][col] + 1
+            insertion = dist[row][col-1] + 1
+            substitution = dist[row-1][col-1] + cost
+            dist[row][col] = min(deletion,      # deletion
+                                 insertion,     # insertion
+                                 substitution)  # substitution
+            if( substitution < insertion and substitution < deletion ):
+                subs += 1
+    
+    return dist[row][col],subs
 
 
 
