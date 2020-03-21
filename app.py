@@ -34,7 +34,7 @@ class GayBot(commands.Cog):
         self.logger = util.get_logger()
         self.quote_channel_id = 178576825511837696
         self.voice = {}
-        self.clip_bank = util.generate_clip_bank()
+        self.clip_bank,self.clipNameList = util.generate_clip_bank()
 
 
 
@@ -210,7 +210,7 @@ class GayBot(commands.Cog):
 
         word_count = len(search_terms)
         search = ' '.join(search_terms)
-        clip_name = util.get_clipv2(self.clip_bank[word_count], search_terms)
+        clip_name = util.get_clipv2(self.clipNameList, search_terms)
         # clip_name = util.get_clip(search, self.clip_bank[word_count])
         db.add_clip_stat(clip_name[:-4], 'soundboard')
 

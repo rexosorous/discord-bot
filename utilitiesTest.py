@@ -2,12 +2,12 @@ import utilities as util
 
 def get_clipv2Test():
     print( "Running get_clipv2Test..." )
-    clipBank = {"i'm fucking gay":"clip1",
-                "no, what the fuck":"clip2",
-                "damn girl, is your titty a penis because i wanna suck on it":"clip3",
-                "bone apple tit":"clip4",
-                "what the fuck did you say to me":"clip5",
-                "you stole all my glory":"clip6"}
+    clipBank = {"i'm fucking gay",
+                "no, what the fuck",
+                "damn girl, is your titty a penis because i wanna suck on it",
+                "bone apple tit",
+                "what the fuck did you say to me",
+                "you stole all my glory"}
     searchTermA = {"fucking","gay"}
     searchTermB = {"bone","tit"}
     searchTermC = {"you","all"}

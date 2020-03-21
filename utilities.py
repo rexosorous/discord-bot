@@ -81,6 +81,7 @@ def generate_clip_bank() -> dict:
     '''
     # initialize the bank
     clip_bank = {}
+    clipNameList = []
     for i in range(1, get_max_word_count()+1):
         clip_bank[i] = {}
     skip = []
@@ -88,9 +89,9 @@ def generate_clip_bank() -> dict:
     # populate
     for file_name in listdir('soundboard/'):
         fixed_file_name = file_name[:-4]
+        clipNameList.append(fixed_file_name)
         word_list = fixed_file_name.split(' ')
         word_count = len(word_list)
-
         combos = [word_list[i:j] for i, j in combinations(range(word_count+1), 2)] # gets all consecutive combos
         for phrase_list in combos:
             phrase = ' '.join(phrase_list) # make sure to turn them back into strings and not [str]
@@ -99,7 +100,7 @@ def generate_clip_bank() -> dict:
                 skip.append(phrase)
             if phrase not in skip:
                 clip_bank[len(phrase_list)][phrase] = file_name
-    return clip_bank
+    return clip_bank, clipNameList
 
 
 
@@ -122,7 +123,7 @@ def get_clip(search: str, clip_bank: dict) -> str:
     return selected_clip
 
 
-def get_clipv2(clip_bank: dict, searchTerms) -> str:
+def get_clipv2(clip_bank, searchTerms) -> str:
     # Fuck me this is computationally intensive
     bestClip = ''
     bestConfidence = 100000
@@ -151,7 +152,7 @@ def get_clipv2(clip_bank: dict, searchTerms) -> str:
         if( totalConfidence < bestConfidence ):
             bestClip = clipStr
             bestConfidence = totalConfidence
-    return clip_bank[bestClip]
+    return bestClip
 
 
 
