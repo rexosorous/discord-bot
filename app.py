@@ -210,7 +210,7 @@ class GayBot(commands.Cog):
 
         word_count = len(search_terms)
         search = ' '.join(search_terms)
-        clip_name = util.get_clipv2(self.clipNameList, search_terms)
+        clip_name = f'soundboard/{util.get_clipv2(self.clipNameList, search_terms)}.mp3'
         # clip_name = util.get_clip(search, self.clip_bank[word_count])
         db.add_clip_stat(clip_name[:-4], 'soundboard')
 
