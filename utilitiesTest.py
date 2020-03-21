@@ -7,11 +7,12 @@ def get_clipv2Test():
                 "damn girl, is your titty a penis because i wanna suck on it",
                 "bone apple tit",
                 "what the fuck did you say to me",
-                "you stole all my glory"}
+                "you stole all my glory",
+                "you're a man, holy shit"}
     searchTermA = {"fucking","gay"}
     searchTermB = {"bone","tit"}
     searchTermC = {"you","all"}
-    searchTermD = {"tit","penis"}
+    searchTermD = ('tit', 'penis')
     if( ( util.get_clipv2( clipBank, searchTermA ) != "i'm fucking gay" ) or
         ( util.get_clipv2( clipBank, searchTermB ) != "bone apple tit" ) or
         ( util.get_clipv2( clipBank, searchTermC ) != "you stole all my glory") or

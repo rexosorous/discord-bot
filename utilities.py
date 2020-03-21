@@ -138,7 +138,7 @@ def get_clipv2(clip_bank, searchTerms) -> str:
                 bestWord = clipWordList[0]
                 for clipWord in clipWordList:
                     curDistance,subs = levenshteinDistance( searchWord, clipWord )
-                    curDistance += subs * 10
+                    curDistance += subs * 100
                     if( curDistance < bestDistance ):
                         bestDistance = curDistance
                         bestWord = clipWord
