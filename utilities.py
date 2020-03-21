@@ -1,5 +1,5 @@
 from difflib import SequenceMatcher
-from itertools import combinations
+from itertools import combinations, permutations
 from random import randint
 import db_handler as db
 from sys import stdout
@@ -123,6 +123,7 @@ def get_clip(search: str, clip_bank: dict) -> str:
     return selected_clip
 
 
+
 def get_clipv2(clip_bank, searchTerms) -> str:
     # Fuck me this is computationally intensive
     bestClip = ''
@@ -154,6 +155,51 @@ def get_clipv2(clip_bank, searchTerms) -> str:
             bestConfidence = totalConfidence
     return bestClip
 
+
+
+def get_clipv3(search: str) -> str:
+    """Finds the closest matching clip to the search terms.
+
+    For each clip, generate a list of each combination of words in the clip name with length equal to the
+    number of search words.
+
+    for example, the combinations of 'bone apple tit' with length equal to the number of words in 'bone tit':
+        * 'bone apple'
+        * 'bone tit'
+        * 'apple tit'
+
+    After generating these combos, we determine how close that combo is (using difflib.SequenceMatcher) to
+    our search phrase (string confidence).
+
+    After iterating through each clip and their combos, we save the file name with the highest confidence
+    and return that.
+
+    Parameters
+    ----------
+    search : str
+        the search phrase
+
+    Returns
+    -------
+    str
+        the file name of the clip.
+    """
+    best_clip = ''
+    best_confidence = 0
+
+    clip_list = get_filenames('soundboard/')
+    for file_name in clip_list:
+        clip_name = file_name[:-4]
+        clip_words = clip_name.split(' ')
+        clip_combos = combinations(clip_words, len(search.split(' ')))
+
+        for combo in clip_combos:
+            confidence = SequenceMatcher(None, search, ' '.join(combo)).ratio()
+            if confidence > best_confidence:
+                best_clip = file_name
+                best_confidence = confidence
+
+    return best_clip
 
 
 
