@@ -6,6 +6,7 @@ from sys import stdout
 from os import listdir
 import logging
 import json
+from fuzzywuzzy import fuzz
 
 
 
@@ -69,42 +70,7 @@ def get_max_word_count() -> int:
 
 
 
-def generate_clip_bank() -> dict:
-    '''
-    generates a json file with all consecutive combinations of every soundboard file name
-    clip_bank[2] is a dict with keys being combinations of 3 consecutive words of every soundboard file name and keys being the file name
-    ex: file name = 'you stole all my glory'
-    clip_bank[2] = {'you stole': 'you stole all my glory.mp3',
-                    'stole all': 'you stole all my glory.mp3',
-                    'all my': 'you stole all my gloyr.mp3'} etc
-                NOT 'you stole' and 'you all'
-    '''
-    # initialize the bank
-    clip_bank = {}
-    clipNameList = []
-    for i in range(1, get_max_word_count()+1):
-        clip_bank[i] = {}
-    skip = []
-
-    # populate
-    for file_name in listdir('soundboard/'):
-        fixed_file_name = file_name[:-4]
-        clipNameList.append(fixed_file_name)
-        word_list = fixed_file_name.split(' ')
-        word_count = len(word_list)
-        combos = [word_list[i:j] for i, j in combinations(range(word_count+1), 2)] # gets all consecutive combos
-        for phrase_list in combos:
-            phrase = ' '.join(phrase_list) # make sure to turn them back into strings and not [str]
-            if phrase in clip_bank[len(phrase_list)]: # ignore common word combinations like "all" or "i'm gonna"
-                del clip_bank[len(phrase_list)][phrase]
-                skip.append(phrase)
-            if phrase not in skip:
-                clip_bank[len(phrase_list)][phrase] = file_name
-    return clip_bank, clipNameList
-
-
-
-def get_clip(search: str, clip_bank: dict) -> str:
+def get_clip(search: str) -> str:
     '''
     finds the soundboard filename with the highest confidence
     for each filename, we've generated all the possible combinations of every word-length and sorted it all by word count
@@ -114,138 +80,14 @@ def get_clip(search: str, clip_bank: dict) -> str:
     selected_clip = ''
     best_confidence = 0
 
-    for phrase in clip_bank:
-        confidence = SequenceMatcher(None, search, phrase).ratio()
+    for clip in get_filenames('soundboard/'):
+        fixed_clip = clip[:-4]
+        confidence = fuzz.token_set_ratio(search, fixed_clip)
         if confidence > best_confidence:
-            selected_clip = clip_bank[phrase]
             best_confidence = confidence
+            selected_clip = clip
 
     return selected_clip
-
-
-
-def get_clipv2(clip_bank, searchTerms) -> str:
-    # Fuck me this is computationally intensive
-    bestClip = ''
-    bestConfidence = 100000
-    for clipStr in clip_bank:
-        totalConfidence = 0
-        for searchWord in searchTerms:
-            index = clipStr.find( searchWord )
-            if( index < 0 ):
-                #Word not found. looking for next best...
-                clipWordList = clipStr.split(' ')
-                bestDistance = 100000
-                bestWord = clipWordList[0]
-                for clipWord in clipWordList:
-                    curDistance,subs = levenshteinDistance( searchWord, clipWord )
-                    curDistance += subs * 100
-                    if( curDistance < bestDistance ):
-                        bestDistance = curDistance
-                        bestWord = clipWord
-                index = clipStr.find( bestWord )
-                index += bestDistance
-            totalConfidence += index
-            if( totalConfidence > bestConfidence ):
-                # Minor optimization
-                totalConfidence = 100000
-                break
-        if( totalConfidence < bestConfidence ):
-            bestClip = clipStr
-            bestConfidence = totalConfidence
-    return bestClip
-
-
-
-def get_clipv3(search: str) -> str:
-    """Finds the closest matching clip to the search terms.
-
-    For each clip, generate a list of each combination of words in the clip name with length equal to the
-    number of search words.
-
-    for example, the combinations of 'bone apple tit' with length equal to the number of words in 'bone tit':
-        * 'bone apple'
-        * 'bone tit'
-        * 'apple tit'
-
-    After generating these combos, we determine how close that combo is (using difflib.SequenceMatcher) to
-    our search phrase (string confidence).
-
-    After iterating through each clip and their combos, we save the file name with the highest confidence
-    and return that.
-
-    Parameters
-    ----------
-    search : str
-        the search phrase
-
-    Returns
-    -------
-    str
-        the file name of the clip.
-    """
-    best_clip = ''
-    best_confidence = 0
-
-    clip_list = get_filenames('soundboard/')
-    for file_name in clip_list:
-        clip_name = file_name[:-4]
-        clip_words = clip_name.split(' ')
-        clip_combos = combinations(clip_words, len(search.split(' ')))
-
-        for combo in clip_combos:
-            confidence = SequenceMatcher(None, search, ' '.join(combo)).ratio()
-            if confidence > best_confidence:
-                best_clip = file_name
-                best_confidence = confidence
-
-    return best_clip
-
-
-
-
-def levenshteinDistance(s, t):
-    """
-        iterative_levenshtein(s, t) -> ldist
-        ldist is the Levenshtein distance between the strings
-        s and t.
-        For all i and j, dist[i,j] will contain the Levenshtein
-        distance between the first i characters of s and the
-        first j characters of t
-    """
-
-    subs = 0
-
-    rows = len(s)+1
-    cols = len(t)+1
-    dist = [[0 for x in range(cols)] for x in range(rows)]
-
-    # source prefixes can be transformed into empty strings
-    # by deletions:
-    for i in range(1, rows):
-        dist[i][0] = i
-
-    # target prefixes can be created from an empty source string
-    # by inserting the characters
-    for i in range(1, cols):
-        dist[0][i] = i
-
-    for col in range(1, cols):
-        for row in range(1, rows):
-            if s[row-1] == t[col-1]:
-                cost = 0
-            else:
-                cost = 1
-            deletion = dist[row-1][col] + 1
-            insertion = dist[row][col-1] + 1
-            substitution = dist[row-1][col-1] + cost
-            dist[row][col] = min(deletion,      # deletion
-                                 insertion,     # insertion
-                                 substitution)  # substitution
-            if( substitution < insertion and substitution < deletion ):
-                subs += 1
-
-    return dist[row][col],subs
 
 
 
