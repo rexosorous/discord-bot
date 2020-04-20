@@ -269,7 +269,13 @@ class GayBot(commands.Cog):
         shows the stats for all the clips
         '''
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
-        await ctx.send(db.get_clip_stats())
+
+        header = 'Clip Name                                                                        | Soundboard | Roulette | Total'
+        stats = db.get_clip_stats()
+
+        while stats:
+            await ctx.send('```' + header + '\n' + '\n'.join(stats[:15]) + '```')
+            del stats[:15]
 
 
 

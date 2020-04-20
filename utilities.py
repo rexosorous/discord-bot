@@ -26,6 +26,7 @@ commands = ('```'
             'soundboard <clip name>     joins the voice channel and plays the specified clip\n'
             'cliproulette               selects a random soundboard clip to play\n'
             'checksoundboard            shows all the clips names that the soundboard can play\n'
+            'soundboardstats            shows the playcount of each soundboard clip\n'
             'stop                       stops the soundboard clip and leaves the audio channel\n'
             'leave                      same as stop\n'
             'scan                       scans the server\'s users to update the self.bot\'s database. use if new users join.'
@@ -71,12 +72,6 @@ def get_max_word_count() -> int:
 
 
 def get_clip(search: str) -> str:
-    '''
-    finds the soundboard filename with the highest confidence
-    for each filename, we've generated all the possible combinations of every word-length and sorted it all by word count
-    we then only check combinations with word count equal to the search's word count and determine how far off it is
-    then we return the filename with the highest confidence
-    '''
     selected_clip = ''
     best_confidence = 0
 

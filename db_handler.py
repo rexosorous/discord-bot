@@ -112,9 +112,15 @@ def add_clip_stat(clip_name: str, type_: str):
 
 
 
-def get_clip_stats() -> str:
-    stats = '```Clip Name                                                                        | Soundboard | Roulette | Total\n'
+def get_clip_stats() -> [str]:
+    """Gets all the clip stats saved in the database
+
+    Returns
+    ------------
+    [str]
+        Each element is a different line (stat)
+    """
+    stats = []
     for clip in Clips.select():
-        stats += '%(name)-.80s | %(soundboard_play_count)-10i | %(roulette_play_count)-8i | %(total_play_count)-5i\n' % clip.__dict__['__data__']
-    stats += '```'
+        stats.append(f'{clip.name[:80]: <80} | {clip.soundboard_play_count: <10} | {clip.roulette_play_count: <8} | {clip.total_play_count: <5}')
     return stats
