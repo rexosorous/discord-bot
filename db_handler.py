@@ -112,15 +112,33 @@ def add_clip_stat(clip_name: str, type_: str):
 
 
 
-def get_clip_stats() -> [str]:
+def get_clip_stats(sort: str, order: str) -> [str]:
     """Gets all the clip stats saved in the database
+
+    Parameters
+    ----------
+    sort: {'name', 'soundboard', 'roulette', 'total'}
+        The field by which to sort the data.
+
+    order: {'asc', 'desc'}
+        Sort by ascending or descending order.
 
     Returns
     ------------
     [str]
         Each element is a different line (stat)
     """
+    sort_type = {'name': Clips.name,
+                 'soundboard': Clips.soundboard_play_count,
+                 'roulette': Clips.roulette_play_count,
+                 'total': Clips.total_play_count}
+
     stats = []
-    for clip in Clips.select():
-        stats.append(f'{clip.name[:80]: <80} | {clip.soundboard_play_count: <10} | {clip.roulette_play_count: <8} | {clip.total_play_count: <5}')
+
+    if order == 'asc':
+        for clip in Clips.select().order_by(+sort_type[sort]):
+            stats.append(f'{clip.name[:80]: <80} | {clip.soundboard_play_count: <10} | {clip.roulette_play_count: <8} | {clip.total_play_count: <5}')
+    elif order == 'desc':
+        for clip in Clips.select().order_by(-sort_type[sort]):
+            stats.append(f'{clip.name[:80]: <80} | {clip.soundboard_play_count: <10} | {clip.roulette_play_count: <8} | {clip.total_play_count: <5}')
     return stats

@@ -264,14 +264,28 @@ class GayBot(commands.Cog):
 
 
     @commands.command()
-    async def soundboardstats(self, ctx):
-        '''
-        shows the stats for all the clips
-        '''
+    async def soundboardstats(self, ctx, sort='name', order='asc'):
+        """
+        Parameters
+        ----------
+        sort: {'name', 'soundboard', 'roulette', 'total'} (optional)
+            The field by which to sort the data.
+
+        order: {'asc', 'desc'} (optional)
+            Sort by ascending or descending order.
+        """
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
 
+        if sort not in ['name', 'soundboard', 'roulette', 'total']:
+            await ctx.send("Cannot sort by that field. Try 'name', 'soundboard', 'roulette', or 'total'.")
+            return
+
+        if order not in ['asc', 'desc']:
+            await ctx.send("Not a valid ordering. Try 'asc' or 'desc'.")
+            return
+
         header = 'Clip Name                                                                        | Soundboard | Roulette | Total'
-        stats = db.get_clip_stats()
+        stats = db.get_clip_stats(sort, order)
 
         while stats:
             await ctx.send('```' + header + '\n' + '\n'.join(stats[:15]) + '```')
