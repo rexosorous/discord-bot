@@ -1,4 +1,5 @@
 import peewee
+from exceptions import *
 
 
 
@@ -30,7 +31,14 @@ class Clips(BaseModel):
     soundboard_play_count = peewee.IntegerField()
 
 
-db.create_tables([Users, Clips])
+class Reminders(BaseModel):
+    time = peewee.FloatField()
+    msg = peewee.CharField()
+    pings = peewee.CharField()
+    active = peewee.BooleanField()
+
+
+db.create_tables([Users, Clips, Reminders])
 
 
 
@@ -55,7 +63,7 @@ def get_id(rname: str) -> str:
     rname = rname.lower()
     try:
         return Users.get(Users.realname==rname).userID
-    except User.DoesNotExist:
+    except Users.DoesNotExist:
         raise UserNotFound
 
 
@@ -83,7 +91,7 @@ def get_yikes_from_rname(rname: str) -> int:
     try:
         user = Users.get(Users.realname==rname)
         return user.yikes
-    except User.DoesNotExist:
+    except Users.DoesNotExist:
         raise UserNotFound
 
 
@@ -92,7 +100,7 @@ def get_yikes_from_uname(uname: str) -> int:
     try:
         user = Users.get(Users.username==uname)
         return user.yikes
-    except User.DoesNotExist:
+    except Users.DoesNotExist:
         raise UserNotFound
 
 
@@ -142,3 +150,41 @@ def get_clip_stats(sort: str, order: str) -> [str]:
         for clip in Clips.select().order_by(-sort_type[sort]):
             stats.append(f'{clip.name[:80]: <80} | {clip.soundboard_play_count: <10} | {clip.roulette_play_count: <8} | {clip.total_play_count: <5}')
     return stats
+
+
+
+def add_reminder(time: float, msg: str, pings: str):
+    Reminders.create(time=time, msg=msg, pings=pings, active=True).save()
+
+
+
+def get_reminders(time: float) -> [dict]:
+    '''Gets reminders that should be pinged before the given time
+
+    to get all pings (even past ones) use time=10000000000 which is something like 300 years in the future
+    to get pings
+
+    Parameters
+    ------------
+    time : float
+        unix time obtained from time.time()
+
+    Returns
+    -----------
+    [peewee.Model]
+        each element of the list is a peewee.Model instance which represents each reminder
+
+    Examples
+    ----------
+    time=10000000000    returns all pings
+    time=0              returns no pings
+    time=time.time()    returns all pings that are due
+    '''
+    return list(Reminders.select().where((Reminders.time<=time) & (Reminders.active==True)))
+
+
+
+def remove_reminder(id_: int):
+    selected = Reminders.get(Reminders.id==id_)
+    selected.active=False
+    selected.save()

@@ -1,11 +1,15 @@
-from discord.ext import commands
-import discord
+import datetime
 import random
+import time
 
-import utilities as util
-from exceptions import *
+import discord
+from discord.ext import commands, tasks
+
 import db_handler as db
+from exceptions import *
+import utilities as util
 import voice
+
 
 
 '''
@@ -36,7 +40,10 @@ class GayBot(commands.Cog):
 
         self.logger = util.get_logger()
         self.quote_channel_id = 178576825511837696
+        self.bot_channel_id = 556668127786827776
         self.voice = {}
+
+        self.reminder_loop.start()
 
 
     @commands.command()
@@ -319,6 +326,119 @@ class GayBot(commands.Cog):
 
 
 
+    @tasks.loop(seconds=3)
+    async def reminder_loop(self):
+        # https://discordpy.readthedocs.io/en/latest/ext/tasks/
+        for remind in db.get_reminders(time.time()):
+            await self.bot.get_channel(self.bot_channel_id).send(f'{remind.pings}\n{remind.msg}')
+            db.remove_reminder(remind.id)
+
+
+
+    @reminder_loop.before_loop
+    async def before_reminder(self):
+        await self.bot.wait_until_ready()
+
+
+
+    @commands.command()
+    async def remind(self, ctx, time_, *optionals):
+        '''Sets reminders to @mentions someone as a given time
+
+        Can either ping at a certain date (absolute) or at some time from now (relative).
+
+        Parameters
+        -----------
+        time : str
+            there are two time formats which determine if the time is absolute or relative
+            YYYY/MM/DD hh:mm
+            hh:mm
+            note: we don't use seconds because the bot can't be that precise
+
+        optionals : str (optional)
+            there are two optional areas that can be included: the message that the bot will reply back with and
+            users to ping.
+                1.  the message MUST be surrounded by quotation marks
+                2.  mentions MUST be at the end of the message with no commas (or any other characters) separating the
+                    users to mention. @mentions or name shorthands can be used.
+                    note: regardless, the user initiating the command will ALWAYS be pinged
+
+        Examples
+        ----------
+        gaybot remind 24:00 "collect warships reward"         will ping the author in 24 hours
+        gaybot remind 2020/04/01 13:00                        will ping the author on april 1st @ 1pm with no message
+        gaybot remind 2020/12/31 00:00 "CHRISTMAS" lloyd      will ping lloyd AND the author on december 31st at midnight
+
+        Note
+        ---------
+        because of how the time formats work, if the user wants an absolute date, the hh:mm:ss part will be part of
+        the optionals parameter.
+        '''
+        self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
+
+        optionals = ' '.join(optionals)
+
+        # set the date of the reminder
+        remind_date = datetime.datetime.now()
+        if '/' in time_: # determines if absolute or relative time
+            # executes if absolute time
+            date_split = time_.split('/')
+            time_split = optionals[:5].split(':')
+            remind_date = remind_date.replace(year=int(date_split[0]), month=int(date_split[1]), day=int(date_split[2]), hour=int(time_split[0]), minute=int(time_split[1]))
+            optionals = optionals[6:]
+        else:
+            # executes if relative time
+            time_split = time_.split(':')
+            remind_date = remind_date + datetime.timedelta(hours=int(time_split[0]), minutes=int(time_split[1]))
+
+        # extract optionals
+        # extract message if possible
+        if '(' in optionals:
+            msg = optionals[optionals.find('(')+1:optionals.find(')')]
+            optionals = optionals[optionals.find(')')+2:]
+        else:
+            msg = ''
+        # extract mentions if possible
+        pings = ctx.author.mention + ' '
+        for user in ctx.message.mentions: # extract all the @mentions
+            pings += user.mention + ' '
+        for user in optionals.split(' '): # extract and convert all the nicknames
+            if user and '@' not in user: # this is already taken care of by the above for loop
+                pings += '<@' + db.get_id(user) + '> '
+
+        unix_time = time.mktime(remind_date.timetuple())
+        db.add_reminder(unix_time, msg, pings)
+        await ctx.send('reminder added')
+
+
+
+    @commands.command()
+    async def checkreminders(self, ctx):
+        self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
+
+        reminders = db.get_reminders(time=10000000000)
+        header = 'ID | Date                       | Message\n' # we don't include pings because we don't want to ping unnescessarily when someone checks
+        # example 1  | 2020-04-26T12:02:29.672626 | doot diddly donger cuckerino haha
+
+        data = ''
+        for rem in reminders:
+            date = datetime.datetime.fromtimestamp(rem.time)
+            data += f'{rem.id: <3}| {date.isoformat()} | {rem.msg}\n'
+
+        await ctx.send('```' + header + '\n' + data + '```')
+
+
+
+    @commands.command()
+    async def removereminder(self, ctx, id_):
+        self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
+
+        id_ = int(id_)
+        db.remove_reminder(id_)
+        await ctx.send('reminder removed')
+
+
+
     @commands.command()
     async def scan(self, ctx):
         '''
@@ -348,6 +468,8 @@ class GayBot(commands.Cog):
 
 
 
+
+
 if __name__ == '__main__':
     bot = commands.Bot(command_prefix='gay ', help_command=None, activity=discord.Game(name='gay help'))
     @bot.event
@@ -355,7 +477,6 @@ if __name__ == '__main__':
         print(f'logged in as {bot.user.name}')
     bot.add_cog(GayBot(bot))
 
-
     with open('token.txt', 'r') as file:
         token = file.read()
-        bot.run(token)
+    bot.run(token)
