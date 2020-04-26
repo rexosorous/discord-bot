@@ -417,15 +417,15 @@ class GayBot(commands.Cog):
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
 
         reminders = db.get_reminders(time=10000000000)
-        header = 'ID | Date                       | Message\n' # we don't include pings because we don't want to ping unnescessarily when someone checks
-        # example 1  | 2020-04-26T12:02:29.672626 | doot diddly donger cuckerino haha
+        header = 'ID | Date                | Message\n' # we don't include pings because we don't want to ping unnescessarily when someone checks
+        # example 1  | 2020-04-26T21:42:16 | doot diddly donger cuckerino haha
 
         data = ''
         for rem in reminders:
             date = datetime.datetime.fromtimestamp(rem.time)
             data += f'{rem.id: <3}| {date.isoformat()} | {rem.msg}\n'
 
-        await ctx.send('```' + header + '\n' + data + '```')
+        await ctx.send('```' + header + data + '```')
 
 
 
