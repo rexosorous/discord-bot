@@ -365,9 +365,9 @@ class GayBot(commands.Cog):
 
         Examples
         ----------
-        gaybot remind 24:00 "collect warships reward"         will ping the author in 24 hours
+        gaybot remind 24:00 collect warships reward           will ping the author in 24 hours
         gaybot remind 2020/04/01 13:00                        will ping the author on april 1st @ 1pm with no message
-        gaybot remind 2020/12/31 00:00 "CHRISTMAS" lloyd      will ping lloyd AND the author on december 31st at midnight
+        gaybot remind 2020/12/31 00:00 CHRISTMAS (lloyd)      will ping lloyd AND the author on december 31st at midnight
 
         Note
         ---------
@@ -392,23 +392,25 @@ class GayBot(commands.Cog):
             remind_date = remind_date + datetime.timedelta(hours=int(time_split[0]), minutes=int(time_split[1]))
 
         # extract optionals
-        # extract message if possible
-        if '(' in optionals:
-            msg = optionals[optionals.find('(')+1:optionals.find(')')]
-            optionals = optionals[optionals.find(')')+2:]
-        else:
-            msg = ''
         # extract mentions if possible
-        pings = ctx.author.mention + ' '
-        for user in ctx.message.mentions: # extract all the @mentions
+        pings = ctx.asuthor.mention + ' '
+        for user in ctx.message.mentions:
             pings += user.mention + ' '
-        for user in optionals.split(' '): # extract and convert all the nicknames
-            if user and '@' not in user: # this is already taken care of by the above for loop
-                pings += '<@' + db.get_id(user) + '> '
+        if '(' in optionals:
+            usernames = optionals[optionals.find('(')+1:optionals.find(')')]
+            optionals = optionals[:optionals.find('(')-1]
+            for user_str in usernames.split(' '):
+                if user_str and '@' not in user_str:
+                    pings += '<@' + db.get_id(user_str) + '> '
+
+        # extract message if possible
+        msg = optionals
 
         unix_time = time.mktime(remind_date.timetuple())
         db.add_reminder(unix_time, msg, pings)
-        await ctx.send('reminder added')
+
+        date = datetime.datetime.fromtimestamp(unix_time)
+        await ctx.send(f'reminder added for {date.isoformat()} to {msg}')
 
 
 
@@ -425,7 +427,10 @@ class GayBot(commands.Cog):
             date = datetime.datetime.fromtimestamp(rem.time)
             data += f'{rem.id: <3}| {date.isoformat()} | {rem.msg}\n'
 
-        await ctx.send('```' + header + data + '```')
+        if data:
+            await ctx.send('```' + header + data + '```')
+        else:
+            await ctx.send('there are no active reminders')
 
 
 
