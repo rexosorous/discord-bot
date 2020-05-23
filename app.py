@@ -358,9 +358,10 @@ class GayBot(commands.Cog):
         optionals : str (optional)
             there are two optional areas that can be included: the message that the bot will reply back with and
             users to ping.
-                1.  the message MUST be surrounded by quotation marks
+                1.  the message
                 2.  mentions MUST be at the end of the message with no commas (or any other characters) separating the
                     users to mention. @mentions or name shorthands can be used.
+                    also MUST be surrounded by parentheses
                     note: regardless, the user initiating the command will ALWAYS be pinged
 
         Examples
@@ -393,7 +394,7 @@ class GayBot(commands.Cog):
 
         # extract optionals
         # extract mentions if possible
-        pings = ctx.asuthor.mention + ' '
+        pings = ctx.author.mention + ' '
         for user in ctx.message.mentions:
             pings += user.mention + ' '
         if '(' in optionals:
