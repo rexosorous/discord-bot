@@ -228,12 +228,17 @@ class GayBot(commands.Cog):
                 self.voice[server] = voice.VoiceHandler(clip_name)
                 await self.voice[server].connect(channel)
                 await self.voice[server].play()
+                await self.voice[server].disconnect()
             elif not self.voice[server].active:
                 self.logger.info(f'switching {server} voice channels to {channel} and playing {clip_name}')
-                await self.voice[server].change_channel(channel, clip_name)
+                await self.voice[server].change_channel(channel)
+                self.voice[server].add_queue(clip_name)
+                await self.voice[server].play()
+                await self.voice[server].disconnect()
             else:
                 self.logger.info(f'adding {clip_name} to {server}\'s audio queue in {channel}')
                 self.voice[server].add_queue(clip_name)
+                await self.voice[server].play()
         except InvalidAudioChannel:
             self.logger.error('user is not in a valid voice channel')
             await ctx.send('you are not in a voice channel')
@@ -301,6 +306,77 @@ class GayBot(commands.Cog):
 
 
     @commands.command()
+    async def phasmophobia(self, ctx, sequence):
+        """
+        Parameters
+        ----------
+        sequence : str
+            the sequence of audio clips to play
+        """
+        self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
+
+        seq = { 'footsteps': ['phasmophobia/GhostFootstepCarpet1.wav', 'phasmophobia/GhostFootstepCarpet2.wav', 'phasmophobia/GhostFootstepCarpet3.wav', 'phasmophobia/GhostFootstepCarpet4.wav', 'phasmophobia/GhostFootstepCarpet5.wav', 'phasmophobia/GhostFootstepCarpet6.wav', 'phasmophobia/GhostFootstepCarpet7.wav', 'phasmophobia/GhostFootstepCarpet8.wav'],
+                'door': ['phasmophobia/Door handle open 01.wav', 'phasmophobia/Door handle open 02.wav', 'phasmophobia/Door handle open 03.wav', 'phasmophobia/Door handle open 04.wav', 'phasmophobia/Door handle open 05.wav', 'phasmophobia/Door handle open 06.wav', 'phasmophobia/Door handle open 07.wav', 'phasmophobia/Door handle open 08.wav', 'phasmophobia/Door handle open 09.wav', 'phasmophobia/Door handle open 10.wav', 'phasmophobia/Door handle open 11.wav'],
+                'moan': ['phasmophobia/Clicker_idle_26.wav'],
+                'heart': ['phasmophobia/Heartbeat (loop) 2.wav'] }
+
+        queue = []
+        if sequence == 'footsteps':
+            queue = random.choices(seq['footsteps'], k=5)
+        elif sequence == 'door':
+            queue = [random.choice(seq['door'])]
+        elif sequence == 'moan':
+            queue = seq['moan']
+        elif sequence in ['heart', 'heartbeat']:
+            queue = seq['heart']
+        else:
+            await ctx.send('invalid phasmophobia sequence')
+            return
+
+        try:
+            server = ctx.guild
+            channel = ctx.message.author.voice.channel
+            if server not in self.voice: # a bot can only be in one voice channel per server
+                self.logger.info(f'creating {server} voice bot, connecting to {channel} and playing {sequence}')
+                self.voice[server] = voice.VoiceHandler(queue)
+                await self.voice[server].connect(channel)
+                await self.voice[server].play(interval=0)
+            elif not self.voice[server].active:
+                self.logger.info(f'switching {server} voice channels to {channel} and playing {sequence}')
+                await self.voice[server].change_channel(channel)
+                self.voice[server].add_queue(queue)
+                await self.voice[server].play(interval=0)
+            else:
+                self.logger.info(f'adding {sequence} to {server}\'s audio queue in {channel}')
+                self.voice[server].add_queue(queue)
+                await self.voice[server].play(interval=0)
+        except InvalidAudioChannel:
+            self.logger.error('user is not in a valid voice channel')
+            await ctx.send('you are not in a voice channel')
+
+
+
+    @commands.command()
+    async def join(self, ctx):
+        self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
+
+        try:
+            server = ctx.guild
+            channel = ctx.message.author.voice.channel
+            if server not in self.voice: # a bot can only be in one voice channel per server
+                self.logger.info(f'creating {server} voice bot, connecting to {channel}')
+                self.voice[server] = voice.VoiceHandler()
+                await self.voice[server].connect(channel)
+            elif not self.voice[server].active:
+                self.logger.info(f'switching {server} voice channels to {channel}')
+                await self.voice[server].change_channel(channel)
+        except InvalidAudioChannel:
+            self.logger.error('user is not in a valid voice channel')
+            await ctx.send('you are not in a voice channel')
+
+
+
+    @commands.command()
     async def stop(self, ctx):
         '''
         disconnects from voice channel
@@ -308,7 +384,7 @@ class GayBot(commands.Cog):
         '''
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
         server = ctx.guild
-        self.voice[server].disconnect()
+        await self.voice[server].disconnect()
         del self.voice[server]
 
 
@@ -321,7 +397,7 @@ class GayBot(commands.Cog):
         '''
         self.logger.info(f'{ctx.author.name}: {ctx.message.content}')
         server = ctx.guild
-        self.voice[server].disconnect()
+        await self.voice[server].disconnect()
         del self.voice[server]
 
 

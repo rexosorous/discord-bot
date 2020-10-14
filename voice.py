@@ -5,10 +5,11 @@ import asyncio
 
 
 class VoiceHandler():
-    def __init__(self, clip_name):
+    def __init__(self, clip_name=[]):
         self.active = True
-        self.queue = [clip_name]
+        self.queue = clip_name if isinstance(clip_name, list) else [clip_name]
         self.voice = None
+        self.playing = False
 
 
 
@@ -23,26 +24,35 @@ class VoiceHandler():
     async def disconnect(self):
         await self.voice.disconnect()
         self.active = False
+        self.playing = False
 
 
 
-    async def play(self):
+    async def play(self, interval=1):
+        if self.playing:
+            return
+
+        self.playing = True
         while self.queue:
-            self.voice.play(FFmpegPCMAudio(f'soundboard/{self.queue.pop(0)}')) # play clip
+            if self.queue[0].startswith('phasmophobia'):
+                self.voice.play(FFmpegPCMAudio(f'{self.queue.pop(0)}'))
+            else:
+                self.voice.play(FFmpegPCMAudio(f'soundboard/{self.queue.pop(0)}')) # play clip
             while self.voice.is_playing():
                 await asyncio.sleep(0.5)
-            await asyncio.sleep(1)
-        await self.disconnect()
+            await asyncio.sleep(interval)
+        self.playing = False
 
 
 
-    async def change_channel(self, channel, clip_name):
+    async def change_channel(self, channel):
         self.active = True
-        self.add_queue(clip_name)
         await self.connect(channel)
-        await self.play()
 
 
 
     def add_queue(self, clip_name):
-        self.queue.append(clip_name)
+        if isinstance(clip_name, list):
+            self.queue += clip_name
+        else:
+            self.queue.append(clip_name)
